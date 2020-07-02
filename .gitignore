@@ -6,6 +6,20 @@
 *.ko
 *.obj
 *.elf
+*.axf
+
+# Other temporary files
+*.crf
+*.iex
+*.__i
+*.d
+*.sct
+*.lnp
+*.lst
+*.map
+*.plg
+*.tra
+*.dep
 
 # Linker output
 *.ilk
@@ -50,3 +64,16 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Temporary Files
+*~
+\#*\#
+*.bak
+*.0000
+*.TMP
+
+# Other files
+*.dwf3work
+*.htm
+*.ini
+*.txt

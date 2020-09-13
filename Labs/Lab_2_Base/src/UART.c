@@ -27,7 +27,7 @@ int fgetc(FILE *f){
 
 void Init_UART0(uint32_t baud_rate) {
 	uint16_t sbr;
-	uint8_t temp;
+	//uint8_t temp;
 	
 	// Enable clock gating for UART0 and Port A
 	SIM->SCGC4 |= SIM_SCGC4_UART0_MASK; 										
@@ -71,7 +71,7 @@ void Init_UART0(uint32_t baud_rate) {
 	UART0->C2 |= UART0_C2_RE(1) | UART0_C2_TE(1);	
 	
 	// Clear the UART RDRF flag
-	temp = UART0->D;
+	//temp = UART0->D;
 	UART0->S1 &= ~UART0_S1_RDRF_MASK;
 
 }

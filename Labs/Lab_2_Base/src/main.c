@@ -51,7 +51,7 @@ int main (void) {
 	
 	while (1) {
 		voltage = Measure_VRail();
-		printf("P3V3 Rail is at %6.4d V\n\r", voltage);
+		printf("P3V3 Rail is at %6.4f V\n\r", voltage);
 		Delay(1000);
 	}
 }

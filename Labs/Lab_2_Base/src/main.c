@@ -8,6 +8,7 @@
 #include "delay.h"
 
 void Init_ADC(void) {
+	SIM -> SCGC6 |= SIM_SCGC6_ADC0(1); // Clock gating for ADC0
 	ADC0->CFG1 = ADC_CFG1_ADLPC_MASK | ADC_CFG1_ADIV(0) | ADC_CFG1_ADICLK(0) |
 	ADC_CFG1_ADLSMP_MASK | ADC_CFG1_MODE(3);
 	/*	ADC_CFG1_ADLPC_MASK: Low-power configuration. The power is reduced at the expense of maximum clock speed

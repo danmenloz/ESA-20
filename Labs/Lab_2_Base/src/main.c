@@ -18,6 +18,7 @@ void Init_ADC(void) {
 			ADC_CFG1_MODE(3): Selects the ADC resolution mode. 16-bit conversion.
 	*/
 	ADC0->SC2 = ADC_SC2_REFSEL(0); // VREFHL selection, software trigger (ADTRG=0 by default)
+	PMC->REGSC |= PMC_REGSC_BGBE_MASK;
 }
 
 float Measure_VRail(void) {

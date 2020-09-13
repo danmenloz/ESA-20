@@ -48,7 +48,7 @@ void Init_UART0(uint32_t baud_rate) {
 	sbr = (uint16_t)((SYS_CLOCK)/(baud_rate * UART_OVERSAMPLE_RATE)); 			
 	UART0->BDH &= ~UART0_BDH_SBR_MASK;
 	UART0->BDH |= UART0_BDH_SBR(sbr>>8);
-	UART0->BDL = UART0_BDL_SBR(sbr>>1); 
+	UART0->BDL = UART0_BDL_SBR(sbr); 
 	UART0->C4 |= UART0_C4_OSR(UART_OVERSAMPLE_RATE-1);				
 
 	// Disable interrupts for RX active edge and LIN break detect, select one stop bit

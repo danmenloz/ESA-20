@@ -36,7 +36,7 @@
 			6: Interrupt to read switches
 */
 
-#define VER (6) 
+#define VER (1) 
 
 
 #if (VER==1) | (VER==2) | (VER==3) | (VER==4)

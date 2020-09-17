@@ -21,7 +21,8 @@ void RTCS_Init(uint32_t freq) {
 }
 
 void RTCS_Run_Scheduler(void){
-	uint32_t i;
+	int i;
+
 	while (1) {
 		// start at top of table to find highest priority ready task
 		for (i=0; i<RTCS_NUM_TASKS; i++) {

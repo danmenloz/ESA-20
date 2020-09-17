@@ -87,7 +87,6 @@ void Task_B(void) {
 int main (void) {
 	Init_Debug_Signals();
 	Init_RGB_LEDs();
-	// Init_ADC();
 	
 	RTCS_Init(100); // 100 Hz timer ticks
 	RTCS_Add_Task(Task_R, 0, 50);

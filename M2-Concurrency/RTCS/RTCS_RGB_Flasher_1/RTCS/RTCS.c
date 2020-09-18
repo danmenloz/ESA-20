@@ -6,7 +6,7 @@ volatile uint32_t RTCS_Num_Ticks=0;
 volatile RTCS_TASK_ENTRY RTCS_Task_Table[RTCS_NUM_TASKS];
 
 void RTCS_Init(uint32_t freq) {
-	int i;
+	uint32_t i;
 
 	for (i=0; i<RTCS_NUM_TASKS; i++) {
 		RTCS_Task_Table[i].Task = (void *)0;
@@ -19,7 +19,7 @@ void RTCS_Init(uint32_t freq) {
 	Init_LPTMR(freq);
 	Start_LPTMR();
 }
-
+	
 void RTCS_Run_Scheduler(void){
 	int i;
 	PTB->PSOR = MASK(DEBUG_RTCS_IDLE_POS);
@@ -38,9 +38,8 @@ void RTCS_Run_Scheduler(void){
 		}
 	}
 }
-
 void RTCS_Timer_Tick(void){
-	int i;
+	uint32_t i;
 	
 	PTB->PSOR = MASK(DEBUG_RTCS_TICK_POS);
 	RTCS_Num_Ticks++;
@@ -54,6 +53,7 @@ void RTCS_Timer_Tick(void){
 			}
 		}
 	}
+
 	PTB->PCOR = MASK(DEBUG_RTCS_TICK_POS);
 }
 
@@ -66,8 +66,8 @@ int RTCS_Add_Task(void (*task)(void), uint32_t priority, uint32_t period) {
 		RTCS_Task_Table[priority].Enabled = 1;
 		return 1;
 	} 
-	return 0;
-}
+		return 0;
+	}
 
 // Returns task priority (slot) 0 to max. -1 on failure.
 int RTCS_Find_Task_Priority(void (*task)(void)) {
@@ -83,11 +83,11 @@ int RTCS_Find_Task_Priority(void (*task)(void)) {
 
 int RTCS_Enable_Task_i(int i, uint32_t enable) {
 	if (i < RTCS_NUM_TASKS) {
-			RTCS_Task_Table[i].Enabled = enable;
+				RTCS_Task_Table[i].Enabled = enable;
 			return 1;
 	}
 	return 0;
-}
+		}
 
 int RTCS_Enable_Task(void (*task)(void), uint32_t enable) {
 	int i;
@@ -142,4 +142,4 @@ int RTCS_Release_Task(void (*task)(void)) {
 	}
 	return 0;
 }
-
+	

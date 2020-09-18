@@ -17,6 +17,7 @@
 #define DBG_6 10
 #define DBG_7 11
 
+#define DEBUG_RS_POS (DBG_0) 				// B1
 #define DEBUG_FLASH_POS (DBG_1) 		// B1
 #define DEBUG_RGB_POS (DBG_2)				// B2
 #define DEBUG_ISR_POS (DBG_3)				// B3

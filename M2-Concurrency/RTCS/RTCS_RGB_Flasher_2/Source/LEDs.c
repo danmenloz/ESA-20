@@ -20,7 +20,6 @@ void Init_RGB_LEDs(void) {
 	PTD->PDDR |= MASK(BLUE_LED_POS);
 	
 	Control_RGB_LEDs(1, 1, 1);
-	Delay(10);
 	Control_RGB_LEDs(0, 0, 0);
 }
 
@@ -42,14 +41,4 @@ void Control_RGB_LEDs(unsigned int red_on, unsigned int green_on, unsigned int b
 	}
 }	
 
-void Light_LEDs(float v) {
-	if (v > V_BLUE) // blue
-			Control_RGB_LEDs(0, 0, 1);
-	else if (v > V_MAGENTA) // magenta
-			Control_RGB_LEDs(1, 0, 1);
-	else if (v > V_GREEN) // green
-			Control_RGB_LEDs(0, 1, 0);
-	else if (v > V_RED) // red
-			Control_RGB_LEDs(1, 0, 0);
-}
 // *******************************ARM University Program Copyright © ARM Ltd 2013*************************************   

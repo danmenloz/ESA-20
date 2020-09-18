@@ -388,11 +388,6 @@
               <FilePath>.\Source\timers.c</FilePath>
             </File>
             <File>
-              <FileName>switches.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\switches.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\main.c</FilePath>
@@ -406,11 +401,6 @@
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\delay.c</FilePath>
-            </File>
-            <File>
-              <FileName>ADC.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\ADC.c</FilePath>
             </File>
           </Files>
         </Group>

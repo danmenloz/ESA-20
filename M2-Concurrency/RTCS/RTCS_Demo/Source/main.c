@@ -6,8 +6,6 @@
 #include "LEDs.h"
 #include "timers.h"
 #include "delay.h"
-#include "ADC.h"
-#include "config.h"
 #include "RTCS.h"
 
 void Init_Debug_Signals(void) {

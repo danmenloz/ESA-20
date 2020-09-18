@@ -1,6 +1,5 @@
 #include "timers.h"
 #include "MKL25Z4.h"
-#include "ADC.h"
 #include "LEDs.h"
 #include "GPIO_defs.h"
 #include "RTCS.h"

@@ -1,0 +1,64 @@
+digraph mycallgraph {
+
+node [shape=box, fontname=Helvetica];
+
+node [label="exit
+", fillcolor=white, style=filled]; exit;
+node [label="ADC0_IRQHandler
+", fillcolor=yellow1, style=filled]; ADC0_IRQHandler;
+node [label="Add_FX
+", fillcolor=white, style=filled]; Add_FX;
+node [label="Delay
+", fillcolor=white, style=filled]; Delay;
+node [label="PWM_Set_Value
+", fillcolor=white, style=filled]; PWM_Set_Value;
+node [label="Subtract_FX
+", fillcolor=white, style=filled]; Subtract_FX;
+node [label="Control_HBLED
+", fillcolor=white, style=filled]; Control_HBLED;
+node [label="Control_RGB_LEDs
+", fillcolor=white, style=filled]; Control_RGB_LEDs;
+node [label="Init_ADC
+", fillcolor=white, style=filled]; Init_ADC;
+node [label="Init_Debug_Signals
+", fillcolor=white, style=filled]; Init_Debug_Signals;
+node [label="Init_PIT
+", fillcolor=white, style=filled]; Init_PIT;
+node [label="Init_RGB_LEDs
+", fillcolor=white, style=filled]; Init_RGB_LEDs;
+node [label="Multiply_FX
+", fillcolor=white, style=filled]; Multiply_FX;
+node [label="PIT_IRQHandler
+", fillcolor=yellow1, style=filled]; PIT_IRQHandler;
+node [label="PWM_Init
+", fillcolor=white, style=filled]; PWM_Init;
+node [label="Start_PIT
+", fillcolor=white, style=filled]; Start_PIT;
+node [label="SystemInit
+", fillcolor=white, style=filled]; SystemInit;
+node [label="TPM0_IRQHandler
+", fillcolor=yellow1, style=filled]; TPM0_IRQHandler;
+node [label="Update_Set_Current
+", fillcolor=white, style=filled]; Update_Set_Current;
+node [label="main
+", fillcolor=yellow, style=filled]; main;
+
+ADC0_IRQHandler -> Control_HBLED;
+Control_HBLED -> Subtract_FX;
+Control_HBLED -> Multiply_FX;
+Control_HBLED -> Add_FX;
+Control_HBLED -> PWM_Set_Value;
+PIT_IRQHandler -> Update_Set_Current;
+main -> Init_RGB_LEDs;
+main -> Init_Debug_Signals;
+main -> Delay;
+main -> Control_RGB_LEDs;
+main -> Init_ADC;
+main -> Start_PIT;
+main -> PWM_Init;
+main -> Init_PIT;
+
+{ rank = same;
+exit; ADC0_IRQHandler; PIT_IRQHandler; SystemInit; TPM0_IRQHandler; main
+};
+}

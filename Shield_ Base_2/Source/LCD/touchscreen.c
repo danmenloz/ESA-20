@@ -10,6 +10,7 @@
 #include "ST7789.h"
 #include "T6963.h"
 #include "font.h"
+#include "debug.h"
 
 #include "gpio_defs.h"
 #include "timers.h"
@@ -102,8 +103,10 @@ uint32_t LCD_TS_Read(PT_T * position) {
 		
 		// Read inputs
 		ADC0->SC1[0] = LCD_TS_YU_CHANNEL; // start conversion on channel YU
+		DEBUG_TOGGLE(DBG_TREADTS_POS);
 		while (!(ADC0->SC1[0] & ADC_SC1_COCO_MASK))
 			;
+		DEBUG_TOGGLE(DBG_TREADTS_POS);
 		yu = ADC0->R[0];
 		x = yu;
 
@@ -130,8 +133,10 @@ uint32_t LCD_TS_Read(PT_T * position) {
 
 		// Read inputs
 		ADC0->SC1[0] = LCD_TS_XL_CHANNEL; // start conversion on channel XL
+		DEBUG_TOGGLE(DBG_TREADTS_POS);
 		while (!(ADC0->SC1[0] & ADC_SC1_COCO_MASK))
 			;
+		DEBUG_TOGGLE(DBG_TREADTS_POS);
 		xl = ADC0->R[0];
 		y = xl;
 

@@ -82,7 +82,7 @@ void Thread_Read_TS(void * arg) {
 				if (p.X < LCD_WIDTH/2) {
 					Sound_Disable_Amp();
 				} else {
-					Sound_Enable_Amp();
+					// HACK Sound_Enable_Amp();
 				}
 			} else {		
 				// Now draw on screen

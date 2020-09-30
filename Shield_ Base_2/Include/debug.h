@@ -14,9 +14,6 @@
 #define DBG_6 10  
 #define DBG_7 11
 
-// Debug Strobe on port E
-#define DBG_STRB 4
-
 // Debug Signal mapping 
 #define DBG_TREADACC_POS		DBG_1 	
 #define DBG_TREADTS_POS 		DBG_2
@@ -26,10 +23,7 @@
 #define DBG_IRQDMA_POS 			DBG_6
 #define DBG_TIDLE						DBG_7
 
-#define DEBUG_START(channel) { PTE->PSOR = MASK(DBG_STRB); PTB->PSOR = MASK(channel); \
-__nop();__nop();__nop();__nop();__nop();__nop();__nop();__nop();__nop();__nop(); \
-PTE->PCOR = MASK(DBG_STRB);} 
-
+#define DEBUG_START(channel) { PTB->PSOR = MASK(channel); } 
 #define DEBUG_STOP(channel) { PTB->PCOR = MASK(channel); }
 #define DEBUG_TOGGLE(channel) { PTB->PTOR = MASK(channel); }
 	

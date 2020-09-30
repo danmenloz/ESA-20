@@ -11,7 +11,7 @@
 #define THREAD_UPDATE_SCREEN_PERIOD_MS (50)
 
 
-#define USE_ACCEL 		(0)
+#define USE_ACCEL 		(1)
 #define USE_LCD_MUTEX (1)
 
 // Custom stack sizes for larger threads

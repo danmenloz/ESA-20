@@ -2,6 +2,7 @@
  *----------------------------------------------------------------------------*/
 #include <MKL25Z4.H>
 #include <stdio.h>
+#include "cmsis_os2.h"
 #include "gpio_defs.h"
 
 #include "LCD.h"
@@ -22,6 +23,11 @@
 
 extern int LCD_JPEG(void);
 
+osThreadId_t tid_SlideShow;
+
+const osThreadAttr_t SlideShow_attr = {
+	.stack_size = 1024
+};
 
 void die(												/* Stop with dying message */
 					FRESULT rc						/* FatFs return value */
@@ -117,27 +123,12 @@ void PFF_Test(void) {
 }
 #endif
 
-/*----------------------------------------------------------------------------
-  MAIN function
- *----------------------------------------------------------------------------*/
-int main(void) {
+void Thread_Slideshow(void * argument) {
 	FATFS fatfs;
 	FRESULT rc;
 	int error;
 	char buf[16];
 	
-	Init_RGB_LEDs();
-
-	Init_UART0(115200);
-	printf("Hello world!\n\r");
-
-	Init_Debug_Signals();
-
-	LCD_Init();
-	LCD_Text_Init(1);
-	LCD_Erase();
-	LCD_Text_PrintStr_RC(0, 0, "Initializing");
-
 	LCD_Text_PrintStr_RC(1, 0, "Looking for uSD card");
 	rc = pf_mount(&fatfs);
 	if (rc) {
@@ -148,7 +139,6 @@ int main(void) {
 	LCD_Text_PrintStr_RC(2, 0, "Mounted uSD card");
 
 	while (1) {
-		Init_Profiling();
 		LCD_Erase();
 		Control_RGB_LEDs(1, 0, 1);	// Magenta: running
 		error = LCD_JPEG();
@@ -161,3 +151,26 @@ int main(void) {
 		}
 	}
 }
+
+
+/*----------------------------------------------------------------------------
+  MAIN function
+ *----------------------------------------------------------------------------*/
+int main(void) {
+	
+	Init_RGB_LEDs();
+	Init_UART0(115200);
+	printf("Hello world!\n\r");
+
+	Init_Debug_Signals();
+
+	LCD_Init();
+	LCD_Text_Init(1);
+	LCD_Erase();
+	LCD_Text_PrintStr_RC(0, 0, "Initializing");
+
+	osKernelInitialize();
+	osThreadNew(Thread_Slideshow, NULL, &SlideShow_attr);
+	osKernelStart();
+}
+

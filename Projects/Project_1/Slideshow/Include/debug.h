@@ -10,8 +10,8 @@
 #define DBG_3 3		// SD_Write
 #define DBG_4 8		// pf_read
 #define DBG_5 9		// SD_Init
-#define DBG_6 10	// unused
-#define DBG_7 11	// unused
+#define DBG_6 10	// Debug
+#define DBG_7 11	// RTX Idle
 
 // #define REMOVE_DEBUG_SIGNALS (1)
 

@@ -104,12 +104,13 @@ int pjpeg_load_from_file(const
 	// Don't try to display larger images
 	if (decoded_width > LCD_WIDTH)
 		return PJPG_BAD_WIDTH;
-	if (decoded_height > LCD_HEIGHT)
-		return PJPG_BAD_HEIGHT;
-	
+
 	decoded_height =
 			reduce ? (image_info.m_MCUSPerCol *
 								image_info.m_MCUHeight) / 8 : image_info.m_height;
+	if (decoded_height > LCD_HEIGHT)
+		return PJPG_BAD_HEIGHT;
+	
 	row_pitch = decoded_width * image_info.m_comps;
 	pImage = (uint8 *) malloc(row_pitch);	// Do one row at a time, reset at end of line
 	if (!pImage) {

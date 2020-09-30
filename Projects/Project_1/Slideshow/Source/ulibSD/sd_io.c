@@ -16,6 +16,7 @@
 #include <MKL25Z4.h>
 #include "debug.h"
 #include "delay.h"
+#include "cmsis_os2.h"
 #include <string.h>
 
 uint32_t timeout = 0;
@@ -330,15 +331,17 @@ SDRESULTS SD_Read(SD_DEV * dev, void *dat, DWORD sector, WORD ofs,
 	{
 		//DEBUG_START(DBG_7); for measuring card read time
 		if (__SD_Send_Cmd(CMD17, sector) == 0) {	// Only for SDHC or SDXC 
+			DEBUG_START(DBG_6);
 			SPI_Timer_On(100);
+			osDelay(1);
 			do {
 				DEBUG_TOGGLE(DBG_2);
 				tkn = SPI_RW(0xFF);
 			} while ((tkn == 0xFF) && SPI_Timer_Status() == TRUE);
 			DEBUG_START(DBG_2);
-			//DEBUG_STOP(DBG_7);
+			DEBUG_STOP(DBG_6);
 			while (SPI_Timer_Status() == FALSE)
-				DEBUG_TOGGLE(DBG_7);  // Trap here on timeout error
+				DEBUG_TOGGLE(DBG_6);  // Trap here on timeout error
 			SPI_Timer_Off();
 			// Token of single block?
 			if (tkn == 0xFE) {
@@ -356,12 +359,12 @@ SDRESULTS SD_Read(SD_DEV * dev, void *dat, DWORD sector, WORD ofs,
 				lastSectorRead = sector;
 				res = SD_OK;
 			} else {
-				DEBUG_START(DBG_7);
-				while (1); // Trap here on error
+				while (1)
+					DEBUG_START(DBG_6); // Trap here on error
 			}
 		} else {
-			DEBUG_START(DBG_7);
-			while (1); // Trap here on error
+			while (1)
+				DEBUG_START(DBG_6); // Trap here on error
 		}
 		SPI_Release();
 		dev->debug.read++;

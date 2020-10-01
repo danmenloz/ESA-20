@@ -24,7 +24,7 @@
 #if (SHIELD_VERSION >= 9) 
 #define LCD_TS_YD_CHANNEL (14)
 #define LCD_TS_YU_CHANNEL (3)
-#if MOVED_TS_XL 
+#if (MOVED_TS_XL>0) 
 	#define LCD_TS_XL_CHANNEL (11) 
 #else 
 	#define LCD_TS_XL_CHANNEL (15) 
@@ -42,7 +42,7 @@
 #define LCD_TS_XR_PT (PTE)
 
 #define LCD_TS_YD_BIT (0)
-#if MOVED_TS_XL 
+#if (MOVED_TS_XL>0)
 	#define LCD_TS_XL_BIT (2) 
 #else
 #define LCD_TS_XL_BIT (1)

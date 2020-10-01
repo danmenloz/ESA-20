@@ -337,6 +337,7 @@ SDRESULTS SD_Read(SD_DEV * dev, void *dat, DWORD sector, WORD ofs,
 			do {
 				DEBUG_TOGGLE(DBG_2);
 				tkn = SPI_RW(0xFF);
+				// osDelay(1);
 			} while ((tkn == 0xFF) && SPI_Timer_Status() == TRUE);
 			DEBUG_START(DBG_2);
 			DEBUG_STOP(DBG_6);

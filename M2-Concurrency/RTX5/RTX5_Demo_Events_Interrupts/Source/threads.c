@@ -8,12 +8,11 @@
 
 osThreadId_t tid_Flash;
 osThreadId_t tid_Read_Switches;
+osEventFlagsId_t evflags_id;    // Use bit 0 for press, bit 1 for release
 
 // Private to file
 uint32_t g_w_delay=FLASH_TIME; 	// delay for flashing
 uint8_t g_flash_LED=0;
-
-osEventFlagsId_t evflags_id;    // Use bit 0 (value of 1) for flash request                               
 
 void Init_My_RTOS_Objects(void) {
   tid_Flash = osThreadNew(Thread_Flash, NULL, NULL);    // Create thread
@@ -24,23 +23,19 @@ void Thread_Flash(void * arg) {
 	int n;
 	uint32_t result;
 	while (1) {
-		result = osEventFlagsWait(evflags_id, PRESSED | RELEASED, 
-		osFlagsWaitAny, osWaitForever);
-		
+		result = osEventFlagsWait(evflags_id, 
+		PRESSED | RELEASED, osFlagsWaitAny, osWaitForever);
 		if (result & PRESSED){
-			for (n=0; n<3; n++) {
+			for (n=0; n<5; n++) {
 				Control_RGB_LEDs(1, 0, 1);
-				osDelay(g_w_delay);
-				Control_RGB_LEDs(0, 0, 0);
 				osDelay(g_w_delay);
 				Control_RGB_LEDs(0, 0, 1);
 				osDelay(g_w_delay);
 			}
-		} else if (result & RELEASED) { 
-			for (n=0; n<3; n++) {
+		} 
+		if (result & RELEASED) { 
+			for (n=0; n<5; n++) {
 				Control_RGB_LEDs(1, 1, 0);
-				osDelay(g_w_delay);
-				Control_RGB_LEDs(0, 0, 0);
 				osDelay(g_w_delay);
 				Control_RGB_LEDs(0, 1, 0);
 				osDelay(g_w_delay);

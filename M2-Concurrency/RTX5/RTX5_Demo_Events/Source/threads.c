@@ -43,15 +43,24 @@ void Thread_Flash(void * arg) {
 }
 
 void Thread_Read_Switches(void  * arg) {
+	int previously_pressed=0;
 	while (1) {
-		osDelay(10);
+		osDelay(200);
 		if (SWITCH_PRESSED(SW1_POS)) {
-			g_flash_LED = 1;
-		}		
+			if (previously_pressed == 0)
+				g_flash_LED = 1;
+			else
+				g_flash_LED = 0;
+			previously_pressed = 1;
+		} else {
+			previously_pressed = 0;
+		}
 	}
 }
 #else
+
 osEventFlagsId_t evflags_id;    // Use bit 0 (value of 1) for flash request                               
+#define PRESSED (1)
 
 void Init_My_RTOS_Objects(void) {
   tid_Flash = osThreadNew(Thread_Flash, NULL, NULL);    // Create thread
@@ -61,24 +70,33 @@ void Init_My_RTOS_Objects(void) {
 
 void Thread_Flash(void * arg) {
 	int n;
+	uint32_t result;
 	while (1) {
-		osEventFlagsWait(evflags_id, 1, osFlagsWaitAny, osWaitForever);
-		for (n=0; n<5; n++) {
-			Control_RGB_LEDs(1, 0, 1);
-			osDelay(g_w_delay);
-			Control_RGB_LEDs(0, 0, 1);
-			osDelay(g_w_delay);
+		result = osEventFlagsWait(evflags_id, PRESSED, 
+		osFlagsWaitAny, osWaitForever);
+		if (result & PRESSED) {
+			for (n=0; n<5; n++) {
+				Control_RGB_LEDs(1, 0, 1);
+				osDelay(g_w_delay);
+				Control_RGB_LEDs(0, 0, 1);
+				osDelay(g_w_delay);
+			}
+			Control_RGB_LEDs(0, 0, 0);
 		}
-		Control_RGB_LEDs(0, 0, 0);
 	}
 }
 
 void Thread_Read_Switches(void  * arg) {
+	int previously_pressed=0;
 	while (1) {
 		osDelay(200);
 		if (SWITCH_PRESSED(SW1_POS)) {
-			osEventFlagsSet(evflags_id, 1);
-		}		
+			if (previously_pressed == 0)
+				osEventFlagsSet(evflags_id, PRESSED);
+			previously_pressed = 1;
+		} else {
+			previously_pressed = 0;
+		}
 	}
 }
 #endif

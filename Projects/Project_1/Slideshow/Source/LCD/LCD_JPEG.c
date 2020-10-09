@@ -13,6 +13,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "cmsis_os2.h"
 
 #include "LCD.h"
 #include "LCD_driver.h"
@@ -117,8 +118,11 @@ int pjpeg_load_from_file(const
 		return PJPG_NOTENOUGHMEM;
 	}
 
+	if (reduce) {
 	row_blocks_per_mcu = image_info.m_MCUWidth >> 3;
 	col_blocks_per_mcu = image_info.m_MCUHeight >> 3;
+	}
+	
 	for (;;) {
 		int y, x;
 		uint8 *pDst_row;
@@ -138,6 +142,7 @@ int pjpeg_load_from_file(const
 		}
 
 		if (reduce) {
+#if 0
 			// In reduce mode, only the first pixel of each 8x8 block is valid.
 			pDst_row =
 					pImage +
@@ -160,6 +165,7 @@ int pjpeg_load_from_file(const
 					pDst_row += row_pitch - 3 * row_blocks_per_mcu;
 				}
 			}
+#endif 
 		} else {
 			// Copy MCU's pixel blocks into the destination bitmap.
 			PT_T pos;
@@ -232,8 +238,6 @@ int pjpeg_load_from_file(const
 }
 
 //------------------------------------------------------------------------------
-#define RUN_FOREVER (0)					// infinite loop of image decoding - for testing bus traffic
-
 int LCD_JPEG(void) {
 	int width, height, comps;
 	pjpeg_scan_type_t scan_type;
@@ -244,7 +248,6 @@ int LCD_JPEG(void) {
 	int result;
 	int image_count;
 
-	do {
 		pixel_data_hash = 0;
 		rc = pf_opendir(&dir, "");
 		image_count = 0;
@@ -254,28 +257,29 @@ int LCD_JPEG(void) {
 				if (rc || !fno.fname[0])
 					break;								/* Error or end of dir */
 				if (!(fno.fattrib & AM_DIR)) {
-					// LCD_Erase();
 					result= pjpeg_load_from_file
 							(fno.fname, &width, &height, &comps, &scan_type,
 							 reduce);
 					if (result != 0) {
-						LCD_Text_PrintStr_RC(0, 0, "pjpeg_load_from_file ");
-						LCD_Text_PrintStr_RC(1, 0, "failed");
-						while (1)
-							;
+					LCD_Text_PrintStr_RC(4, 0, "pjpeg_load_from_file ");
+					LCD_Text_PrintStr_RC(5, 0, "failed :(");
+					osDelay(2000);
+					return 1;
 					} else {
 						image_count++;
 					}
 				}
 			}
 			if (image_count == 0) {
-				LCD_Text_PrintStr_RC(0, 0, "No JPEGs Found!");				
+			LCD_Text_PrintStr_RC(4, 0, "No JPEGs Found! :(");				
+			osDelay(2000);
+			return 1;
 			}
 		} else {
-			LCD_Text_PrintStr_RC(0, 0, "Couldn't open");
-			LCD_Text_PrintStr_RC(0, 0, "root directory");
-			while (1)
-				;
+		LCD_Text_PrintStr_RC(4, 0, "Couldn't open");
+		LCD_Text_PrintStr_RC(5, 0, "root directory :(");
+		osDelay(2000);
+		return 1;
 		}
 #if ENABLE_PIXEL_HASH
 		if (pixel_data_hash != 0x7D215B3D) {
@@ -284,7 +288,6 @@ int LCD_JPEG(void) {
 				;
 		}
 #endif
-	} while (RUN_FOREVER);
 
 	return 0;
 }

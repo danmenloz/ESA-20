@@ -584,6 +584,16 @@
               <FileType>5</FileType>
               <FilePath>.\Include\UART.h</FilePath>
             </File>
+            <File>
+              <FileName>itoa.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\itoa.c</FilePath>
+            </File>
+            <File>
+              <FileName>stats.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\stats.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

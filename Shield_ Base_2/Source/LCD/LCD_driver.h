@@ -11,7 +11,8 @@
 #define LCD_CONTROLLER (CTLR_ST7789) 
 // #define LCD_CONTROLLER (CTLR_T6963) 
 
-#define SHIELD_VERSION (10)
+#define SHIELD_VERSION (12)
+#define MOVED_TS_XL (1) // from PTC1 (V12 board as built) to PTC2
 
 // Backlight
 #define LCD_BL_TPM (TPM1)
@@ -19,11 +20,16 @@
 #define LCD_BL_TPM_FREQ (40000)
 #define LCD_BL_PERIOD ((SystemCoreClock)/(2*(LCD_BL_TPM_FREQ)))
 
+
 // Touchscreen Hardware Interface
-#if ((SHIELD_VERSION == 9) || (SHIELD_VERSION == 10))
+#if (SHIELD_VERSION >= 9) 
 #define LCD_TS_YD_CHANNEL (14)
 #define LCD_TS_YU_CHANNEL (3)
-#define LCD_TS_XL_CHANNEL (15) 
+#if MOVED_TS_XL 
+	#define LCD_TS_XL_CHANNEL (11) 
+#else 
+	#define LCD_TS_XL_CHANNEL (15) 
+#endif
 #define LCD_TS_XR_CHANNEL (7)
 
 #define LCD_TS_YD_PORT (PORTC)
@@ -37,7 +43,11 @@
 #define LCD_TS_XR_PT (PTE)
 
 #define LCD_TS_YD_BIT (0)
-#define LCD_TS_XL_BIT (1)
+#if MOVED_TS_XL 
+	#define LCD_TS_XL_BIT (2) 
+#else
+	#define LCD_TS_XL_BIT (1)
+#endif
 #define LCD_TS_YU_BIT (22)
 #define LCD_TS_XR_BIT (23)
 

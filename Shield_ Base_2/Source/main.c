@@ -35,9 +35,9 @@ int main (void) {
 	
 	Sound_Init();	
 	Play_Tone();
-	// Sound_Disable_Amp();
+	Sound_Disable_Amp();
+	Set_OL_HBLED_Pulse_Width(1);
 	
-	Set_OL_HBLED_Pulse_Width(LIM_DUTY_CYCLE/16);
 	
 	LCD_Init();
 	LCD_Text_Init(1);
@@ -63,6 +63,7 @@ int main (void) {
 #endif
 	Delay(70);
 	LCD_Erase();
+//	Set_OL_HBLED_Pulse_Width(1);
 
 	osKernelInitialize();
 	Create_OS_Objects();

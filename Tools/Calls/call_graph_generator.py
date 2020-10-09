@@ -8,6 +8,9 @@
 ## parses it, and transforms it into a .gv Graphviz gvedit file to
 ## visually display the call graph for your project.
 ##
+## AD To Do: add arguments to control show_stack_usage, quiet output, overwrite pdf option
+##
+##
 
 import re
 from tkinter import *
@@ -93,6 +96,7 @@ def IsRootFunctionName(funname):
 
 inputfilename = None
 outputfilename = None
+show_stack_usage = False
 try:
 	opts, args = getopt.getopt(sys.argv[1:],"i:o:",[])
 except getopt.GetoptError:
@@ -214,10 +218,11 @@ while line:
 								if (caller != None):
 										g_Functions.append(caller)
 										outputfile.writelines('node [label="%s\n' %caller)
-										if 'stack_size' in locals():
-												outputfile.writelines('%s \n' %stack_size)
-										if ('max_depth' in locals()) and (IsRootFunctionName(caller)):
-												outputfile.writelines('%s' %max_depth)
+										if (show_stack_usage):
+											if 'stack_size' in locals():
+													outputfile.writelines('%s \n' %stack_size)
+											if ('max_depth' in locals()) and (IsRootFunctionName(caller)):
+													outputfile.writelines('%s' %max_depth)
 										outputfile.writelines('"')
 										# AD: pretty print root function names
 										outputfile.writelines(ColorCodeNode(caller))

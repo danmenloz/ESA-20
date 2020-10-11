@@ -72,7 +72,6 @@ dkms.conf
 *.TMP
 
 # Other files
-*.dwf3work
 *.htm
 *.ini
 *.txt

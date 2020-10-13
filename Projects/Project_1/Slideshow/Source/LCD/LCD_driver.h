@@ -83,10 +83,19 @@
 #define TS_CALIB_SAMPLES (10)
 
 /**************************************************************/
-#define	GPIO_ResetBit(pos)	(FPTC->PCOR = MASK(pos))
-#define	GPIO_SetBit(pos) 		(FPTC->PSOR = MASK(pos))
-#define GPIO_Write(cmd) 		FPTC->PDOR &= ~LCD_DATA_MASK; \
-														FPTC->PDOR |= (cmd & 0xff) << LCD_DB8_POS;
+#if 0
+#define	GPIO_ResetBit(pos)	{FPTC->PCOR = MASK(pos); __nop(); __nop(); __nop(); __nop();}
+#define	GPIO_SetBit(pos) 		{FPTC->PSOR = MASK(pos); __nop(); __nop(); __nop(); __nop();}
+#define GPIO_Write(cmd) 		{FPTC->PDOR &= ~LCD_DATA_MASK; \
+														__nop(); __nop(); __nop(); __nop(); \
+														FPTC->PDOR |= (cmd & 0xff) << LCD_DB8_POS; \
+														__nop(); __nop(); __nop(); __nop();}
+#else 
+#define	GPIO_ResetBit(pos)	{FPTC->PCOR = MASK(pos); }
+#define	GPIO_SetBit(pos) 		{FPTC->PSOR = MASK(pos); }
+#define GPIO_Write(cmd) 		{FPTC->PDOR &= ~LCD_DATA_MASK; \
+														FPTC->PDOR |= (cmd & 0xff) << LCD_DB8_POS; }
+#endif
 /**************************************************************/
 
 #define LCD_CTRL_INIT_SEQ_END 0

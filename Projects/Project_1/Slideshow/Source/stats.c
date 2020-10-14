@@ -4,7 +4,7 @@
 #include "cmsis_os2.h"
 #include "itoa.h"
 
-#define IDLE_LOOPS_PER_MS (6000) // Remove
+#define IDLE_LOOPS_PER_MS (5990) // Remove
 
 volatile uint32_t blocks_read=0;
 volatile uint32_t idle_counter=0; 

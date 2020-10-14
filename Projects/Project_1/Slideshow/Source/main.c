@@ -97,6 +97,7 @@ void Thread_Slideshow(void * argument) {
 	LCD_Text_PrintStr_RC(2, 0, "Mounted uSD card");
 
 	while (1) {
+		osDelay(5);
 		Stats_Start();
 		Control_RGB_LEDs(0, 0, 1);	// Blue: Read/Decode/Display 
 		error = LCD_JPEG();
@@ -112,7 +113,7 @@ void Thread_Slideshow(void * argument) {
 		} else {
 			Control_RGB_LEDs(0, 1, 0);	// Green: LCD_JPEG success
 			Stats_Display();
-			osDelay(4000);
+			//osDelay(4000);
 		}
 	}
 }

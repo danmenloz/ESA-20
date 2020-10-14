@@ -28,6 +28,7 @@
 #include "cmsis_compiler.h"
 #include "rtx_os.h"
 #include "stats.h"
+#include "debug.h"
  
 // OS Idle Thread
 __WEAK __NO_RETURN void osRtxIdleThread (void *argument) {
@@ -35,6 +36,7 @@ __WEAK __NO_RETURN void osRtxIdleThread (void *argument) {
 
   for (;;) {
 		idle_counter++;
+		DEBUG_TOGGLE(DBG_7);
 	}
 }
  

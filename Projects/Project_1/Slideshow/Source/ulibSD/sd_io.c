@@ -340,11 +340,13 @@ SDRESULTS SD_Read(SD_DEV * dev, void *dat, DWORD sector, WORD ofs,
 	{
 		blocks_read++;
 		if (__SD_Send_Cmd(CMD17, sector) == 0) {	// Only for SDHC or SDXC 
+			DEBUG_START(DBG_6);
 			SPI_Timer_On(100);
 			do {
 				DEBUG_TOGGLE(DBG_2);
 				tkn = SPI_RW(0xFF);
 			} while ((tkn == 0xFF) && SPI_Timer_Status() == TRUE);
+			DEBUG_STOP(DBG_6);
 			DEBUG_START(DBG_2);
 			while (SPI_Timer_Status() == FALSE)
 				;  // Trap here on timeout error

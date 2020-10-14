@@ -155,21 +155,21 @@ void DMA_OpenChannelsForSpi(volatile void* destPtr, uint16_t numBytes)
 }
 
 inline BYTE SPI_RW(BYTE d) { 
-	DEBUG_START(DBG_1);
+	// DEBUG_START(DBG_1);
 
 	// Wait for previous transmission to complete
 	while (!(SPI1_S & SPI_S_SPTEF_MASK)) {
-		DEBUG_TOGGLE(DBG_1);
+		// DEBUG_TOGGLE(DBG_1);
 	}
-	DEBUG_START(DBG_1);
+	// DEBUG_START(DBG_1);
 	// Transmit the data
 	SPI1_D = d;
 	
 	// block until TX complete
 	while (!(SPI1_S & SPI_S_SPRF_MASK)) {
-		DEBUG_TOGGLE(DBG_1);
+		// DEBUG_TOGGLE(DBG_1);
 	}
-	DEBUG_STOP(DBG_1);
+	// DEBUG_STOP(DBG_1);
 	
 	// return data rx'ed
 	return ((BYTE) (SPI1_D));
@@ -181,11 +181,13 @@ void SPI_Release(void) {
 }
 
 inline void SPI_CS_Low(void) {
-	GPIOE_PDOR &= ~(1 << 4);			//CS LOW
+	FPTE->PCOR = 1<<4;
+
 }
 
 inline void SPI_CS_High(void) {
-	GPIOE_PDOR |= (1 << 4);				//CS HIGH
+	FPTE->PSOR = 1<<4;
+
 }
 
 inline void SPI_Freq_High(void) {

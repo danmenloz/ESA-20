@@ -20,9 +20,9 @@
 #define DEBUG_STOP(channel)
 #define DEBUG_TOGGLE(channel)
 #else
-#define DEBUG_START(channel) {PTB->PSOR = MASK(channel);} 
-#define DEBUG_STOP(channel) { PTB->PCOR = MASK(channel); }
-#define DEBUG_TOGGLE(channel) { PTB->PTOR = MASK(channel); }
+#define DEBUG_START(channel) {FPTB->PSOR = MASK(channel);} 
+#define DEBUG_STOP(channel) { FPTB->PCOR = MASK(channel); }
+#define DEBUG_TOGGLE(channel) { FPTB->PTOR = MASK(channel); }
 #endif
 
 void Init_Debug_Signals(void);

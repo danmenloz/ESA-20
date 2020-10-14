@@ -1,14 +1,11 @@
 #ifndef TIMERS_H
 #define TIMERS_H
 #include "MKL25Z4.h"
+#include "cmsis_os2.h"
 
 #define USE_PIT (0)
 
 #define LCD_UPDATE_PERIOD 10
-
-void PIT_Init(unsigned period);
-void PIT_Start(void);
-void PIT_Stop(void);
 
 void TPM_Init(unsigned period_ms);
 
@@ -24,5 +21,9 @@ void LPTMR_Init(void);
 void LPTMR_Start(void);
 void LPTMR_Stop(void);
 
+void PIT_Init(uint32_t period);
+void PIT_Start(void);
+void PIT_Stop(void);
+void PIT_IRQHandler(void);
 #endif
 

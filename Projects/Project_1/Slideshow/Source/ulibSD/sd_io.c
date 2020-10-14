@@ -18,6 +18,8 @@
 #include "delay.h"
 #include "cmsis_os2.h"
 #include <string.h>
+#include "timers.h"
+#include "stats.h"
 
 uint32_t timeout = 0;
 uint32_t UseDMAForSDRead = 0;
@@ -88,6 +90,14 @@ DWORD __SD_Power_Of_Two(BYTE e) {
 }
 
 inline void __SD_Assert(void) {
+	__nop();
+	__nop();
+	__nop();
+	__nop();
+	__nop();
+	__nop();
+	__nop();
+	__nop();
 	SPI_CS_Low();
 }
 
@@ -325,24 +335,19 @@ SDRESULTS SD_Read(SD_DEV * dev, void *dat, DWORD sector, WORD ofs,
 		DEBUG_STOP(DBG_2);
 		return (SD_PARERR);
 	}
-	// Convert sector number to byte address (sector * SD_BLK_SIZE)
-	//    if (__SD_Send_Cmd(CMD17, sector * SD_BLK_SIZE) == 0) { // Only for SDSC
+
 	if (sector != lastSectorRead) // If we haven't already read this sector, read it
 	{
-		//DEBUG_START(DBG_7); for measuring card read time
+		blocks_read++;
 		if (__SD_Send_Cmd(CMD17, sector) == 0) {	// Only for SDHC or SDXC 
-			DEBUG_START(DBG_6);
 			SPI_Timer_On(100);
-			osDelay(1);
 			do {
 				DEBUG_TOGGLE(DBG_2);
 				tkn = SPI_RW(0xFF);
-				// osDelay(1);
 			} while ((tkn == 0xFF) && SPI_Timer_Status() == TRUE);
 			DEBUG_START(DBG_2);
-			DEBUG_STOP(DBG_6);
 			while (SPI_Timer_Status() == FALSE)
-				DEBUG_TOGGLE(DBG_6);  // Trap here on timeout error
+				;  // Trap here on timeout error
 			SPI_Timer_Off();
 			// Token of single block?
 			if (tkn == 0xFE) {
@@ -359,20 +364,18 @@ SDRESULTS SD_Read(SD_DEV * dev, void *dat, DWORD sector, WORD ofs,
 				DEBUG_START(DBG_2);
 				lastSectorRead = sector;
 				res = SD_OK;
-			} else {
+			} else { // Token is not 0xFE
 				while (1)
-					DEBUG_START(DBG_6); // Trap here on error
+					; // Trap here on error
 			}
-		} else {
+		} else { // Didn't get 0 back from __SD_Send_Cmd (17)
 			while (1)
-				DEBUG_START(DBG_6); // Trap here on error
+				; // Trap here on error
 		}
 		SPI_Release();
 		dev->debug.read++;
 		DEBUG_STOP(DBG_2);
-   }
-   else
-	 {
+   } else { // We just read this sector last time, so don't redo it
 	 	 res = SD_OK;
 	 }
 	
@@ -386,8 +389,7 @@ SDRESULTS SD_Read(SD_DEV * dev, void *dat, DWORD sector, WORD ofs,
 	 }
 	 memcpy(datCpy, &sdBuf[ofs], cnt);
 
-	 while (res != SD_OK);
-	 
+
 	 return (res);
 }
 

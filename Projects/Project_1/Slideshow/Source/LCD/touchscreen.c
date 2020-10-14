@@ -161,8 +161,12 @@ void LCD_TS_Blocking_Read(PT_T * position) {
 		;
 	// Wait for screen release
 	while (LCD_TS_Read(&temp) == 1) {
+		if (position == NULL)
+			return;
+		else {
 		position->X = temp.X;
 		position->Y = temp.Y;
+		}
 	}
 	return;
 }

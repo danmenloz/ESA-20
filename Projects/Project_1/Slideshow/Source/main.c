@@ -27,15 +27,24 @@ extern int LCD_JPEG(void);
 
 osThreadId_t tid_SlideShow;
 
-#define TEST_PREC_DELAY_ECE560 (0)
+#define TEST_PREC_DELAY_ECE560 (1)
 
 #if TEST_PREC_DELAY_ECE560
 osThreadId_t tid_T1, tid_T2, tid_T3, tid_T4;
 
 void T1(void * argument) {
 	while (1) {
+		//struct th_info th;
+		//th.id = osThreadGetId();
+		//th.flag = 1;
+		
 		DEBUG_START(DBG_1);
 		// Add code to perform a precision delay of 28 microseconds here
+		PIT_Init(11999999, osThreadGetId(), 1); // 500 ms
+		PIT_Start();
+		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever); //wait for flag and clear it
+		
+		
 		DEBUG_STOP(DBG_1);
 		osDelay(10); // Wait 10 ms before testing timer channel again
 	}
@@ -137,9 +146,9 @@ int main(void) {
 	osKernelInitialize();
 #if TEST_PREC_DELAY_ECE560
 	osThreadNew(T1, NULL, NULL);
-	osThreadNew(T2, NULL, NULL);
-	osThreadNew(T3, NULL, NULL);
-	osThreadNew(T4, NULL, NULL);
+	//osThreadNew(T2, NULL, NULL);
+	//osThreadNew(T3, NULL, NULL);
+	//osThreadNew(T4, NULL, NULL);
 #else
 	osThreadNew(Thread_Slideshow, NULL, &SlideShow_attr);
 #endif

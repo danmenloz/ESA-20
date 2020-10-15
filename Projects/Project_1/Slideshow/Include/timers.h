@@ -21,9 +21,15 @@ void LPTMR_Init(void);
 void LPTMR_Start(void);
 void LPTMR_Stop(void);
 
-void PIT_Init(uint32_t period);
+void PIT_Init(uint32_t delay, osThreadId_t tid, uint32_t flag);
 void PIT_Start(void);
 void PIT_Stop(void);
 void PIT_IRQHandler(void);
+
+struct th_info {
+	osThreadId_t id;
+	uint32_t flag;
+};
+	
 #endif
 

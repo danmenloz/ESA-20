@@ -1,7 +1,7 @@
 #include "timers.h"
 #include "MKL25Z4.h"
 
-
+struct th_info th;
 
 void PWM_Init(TPM_Type * TPM, uint8_t channel_num, uint16_t period, uint16_t duty)
 {
@@ -86,7 +86,7 @@ void TPM0_IRQHandler(void) {
 	//clear pending IRQ flag
 	TPM0->SC |= TPM_SC_TOF_MASK; 
 }
-void PIT_Init(uint32_t period) {
+void PIT_Init(uint32_t delay, osThreadId_t tid, uint32_t flag ) {
 	// Enable clock to PIT module
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
 	
@@ -95,7 +95,7 @@ void PIT_Init(uint32_t period) {
 	PIT->MCR |= PIT_MCR_FRZ_MASK;
 	
 	// Initialize PIT0 to count down from argument 
-	PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(period);
+	PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(delay);
 
 	// No chaining
 	PIT->CHANNEL[0].TCTRL &= PIT_TCTRL_CHN_MASK;
@@ -106,7 +106,10 @@ void PIT_Init(uint32_t period) {
 	/* Enable Interrupts */
 	NVIC_SetPriority(PIT_IRQn, 128); // 0, 64, 128 or 192
 	NVIC_ClearPendingIRQ(PIT_IRQn); 
-	NVIC_EnableIRQ(PIT_IRQn);	
+	NVIC_EnableIRQ(PIT_IRQn);
+
+	th.id = tid;
+	th.flag = flag;
 }
 
 
@@ -129,6 +132,7 @@ void PIT_IRQHandler(void) {
 		// clear status flag for timer channel 0
 		PIT->CHANNEL[0].TFLG &= PIT_TFLG_TIF_MASK;
 		// Do ISR work
+		uint32_t result = osThreadFlagsSet(th.id, th.flag);
 		}
 	if (PIT->CHANNEL[1].TFLG & PIT_TFLG_TIF_MASK) {
 		// clear status flag for timer channel 1

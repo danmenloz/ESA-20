@@ -21,7 +21,7 @@ void LPTMR_Init(void);
 void LPTMR_Start(void);
 void LPTMR_Stop(void);
 
-void PIT_Init(uint32_t period);
+void PIT_Init(uint32_t period, osThreadId_t tid);
 void PIT_Start(void);
 void PIT_Stop(void);
 void PIT_IRQHandler(void);
@@ -36,7 +36,7 @@ struct vch_info {
 	uint32_t en; // enable
 };
 
-void clearInfo(struct vch_info *vch);
+void clearInfo(struct vch_info volatile *vch);
 	
 #endif
 

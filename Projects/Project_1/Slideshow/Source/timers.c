@@ -3,7 +3,8 @@
 
 #define V_CHANNELS 4 // number of virtual channels
 struct vch_info volatile vch_arr[V_CHANNELS]; // array of virtual channels' info
-struct vch_info volatile * volatile current_vch; // pointer to the virtual channel currently using the timer
+struct vch_info volatile * volatile current_vch; // volatile pointer pointing to volitile data
+struct vch_info volatile vch; 
 
 void PWM_Init(TPM_Type * TPM, uint8_t channel_num, uint16_t period, uint16_t duty)
 {
@@ -88,7 +89,7 @@ void TPM0_IRQHandler(void) {
 	//clear pending IRQ flag
 	TPM0->SC |= TPM_SC_TOF_MASK; 
 }
-void PIT_Init(uint32_t period ) {
+void PIT_Init(uint32_t period, osThreadId_t tid ) {
 	// Enable clock to PIT module
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
 	
@@ -109,6 +110,9 @@ void PIT_Init(uint32_t period ) {
 	NVIC_SetPriority(PIT_IRQn, 128); // 0, 64, 128 or 192
 	NVIC_ClearPendingIRQ(PIT_IRQn); 
 	NVIC_EnableIRQ(PIT_IRQn);
+	
+	vch.id = tid;
+	vch.count = PIT->CHANNEL[0].CVAL;
 }
 
 
@@ -123,7 +127,7 @@ void PIT_Stop(void) {
 }
 
 // Clear virtual channel info
-void clearInfo(struct vch_info *vch){
+void clearInfo(struct vch_info volatile *vch){
 	vch->id = NULL;
 	vch->flag = 0;
 	vch->count = 0;
@@ -132,17 +136,17 @@ void clearInfo(struct vch_info *vch){
 
 void virtual_PIT_Init(uint32_t virtual_channel, uint32_t delay, osThreadId_t tid, uint32_t flag){
 	// if PIT not initialized, do it!
-	if (~(SIM->SCGC6 & SIM_SCGC6_PIT_MASK)){
-		PIT_Init(delay);
-		// initialize array
-		for(int i=0; i<V_CHANNELS; i++){
-			//clearInfo(&vch_arr[i]);
-			vch_arr[i].id = NULL;
-			vch_arr[i].flag = 0;
-			vch_arr[i].count = 0;
-			vch_arr[i].en = 0;
-		}
-	}
+//	if (~(SIM->SCGC6 & SIM_SCGC6_PIT_MASK)){
+//		PIT_Init(delay);
+//		// initialize array
+//		for(int i=0; i<V_CHANNELS; i++){
+//			//clearInfo(&vch_arr[i]);
+//			vch_arr[i].id = NULL;
+//			vch_arr[i].flag = 0;
+//			vch_arr[i].count = 0;	
+//			vch_arr[i].en = 0;
+//		}
+//	}
 	
 	// Set channel info
 	vch_arr[virtual_channel].id = tid;
@@ -153,32 +157,34 @@ void virtual_PIT_Init(uint32_t virtual_channel, uint32_t delay, osThreadId_t tid
 
 void virtual_PIT_Start(uint32_t virtual_channel){
 	// PIT running?
-	if(PIT->CHANNEL[0].TCTRL & PIT_TCTRL_TEN_MASK){
-		if( vch_arr[virtual_channel].count > PIT->CHANNEL[0].CVAL ){
-			vch_arr[virtual_channel].count -= PIT->CHANNEL[0].CVAL;
-		}else{
-			// run this channel first since it's shorter
-		
-			current_vch = &vch_arr[virtual_channel];
-			PIT_Stop();
-			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count);
-			PIT_Start();
-			uint32_t gap = PIT->CHANNEL[0].CVAL - current_vch->count;
-			// update channels info
-			for(int i=0; i<V_CHANNELS; i++){
-				if(vch_arr[i].en && &vch_arr[i]!=current_vch)
-					vch_arr[virtual_channel].count += gap;
-			}
-			current_vch->count = 0; // clear count
-			
-		}
-	}else{// PIT is disabled, this is the first virtual channel being used
-		current_vch = &vch_arr[virtual_channel];
-		PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count);
-		PIT_Start();
-		current_vch->count = 0; // clear count
-	}
-	
+//	if(PIT->CHANNEL[0].TCTRL & PIT_TCTRL_TEN_MASK){
+//		if( vch_arr[virtual_channel].count > PIT->CHANNEL[0].CVAL ){
+//			vch_arr[virtual_channel].count -= PIT->CHANNEL[0].CVAL;
+//		}else{
+//			// run this channel first since it's shorter
+//		
+//			current_vch = &vch_arr[virtual_channel];
+//			PIT_Stop();
+//			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count);
+//			PIT_Start();
+//			uint32_t gap = PIT->CHANNEL[0].CVAL - current_vch->count;
+//			// update channels info
+//			for(int i=0; i<V_CHANNELS; i++){
+//				if(vch_arr[i].en && &vch_arr[i]!=current_vch)
+//					vch_arr[virtual_channel].count += gap;
+//			}
+//			current_vch->count = 0; // clear count
+//			
+//		}
+//	}else{// PIT is disabled, this is the first virtual channel being used
+//		current_vch = &vch_arr[virtual_channel];
+//		PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count);
+//		PIT_Start();
+//		current_vch->count = 0; // clear count
+//	}
+
+	current_vch = &vch_arr[virtual_channel];
+	PIT_Start();
 	vch_arr[virtual_channel].en = 1;
 }
 	
@@ -196,45 +202,47 @@ void PIT_IRQHandler(void) {
 		PIT->CHANNEL[0].TFLG &= PIT_TFLG_TIF_MASK;
 		// Do ISR work
 		
-		// Determine which virtual channel caused the interrupt
-		osThreadId_t th = current_vch->id; //(*current_vch).id;
-		uint32_t flag = current_vch->flag;
-		//clearInfo(current_vch); // clear channel info
-		current_vch->id = NULL;
-		current_vch->flag = 0;
-		current_vch->count = 0;
-		current_vch->en = 0;
-		
-		// Reconfigure the PIT for the next virtual channel event (if any)
-		PIT_Stop();
-		// Find the lowest-enabled channel counter and load it to the PIT value
-		uint32_t min;
-		for(int i=0; i<V_CHANNELS; i++){
-			if (vch_arr[i].en){
-				min = vch_arr[i].count;
-				for(int i=0; i<V_CHANNELS; i++){
-					if (vch_arr[i].count < min && vch_arr[i].en){
-						min = vch_arr[i].count; 
-						current_vch = &vch_arr[i];
-					}
-				}
-			}
-		}
-		if(current_vch->en){ // virtual channel enabled? min found!
-			//stop
-			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count); // set PIT val
-			PIT_Start();
-			//update count of all enabled channels
-			for(int i=0; i<V_CHANNELS; i++){
-				if(vch_arr[i].en)
-					vch_arr[i].count -= current_vch->count;
-			}
-		}
+//		// Determine which virtual channel caused the interrupt
+//		osThreadId_t th = current_vch->id; //(*current_vch).id;
+//		uint32_t flag = current_vch->flag;
+//		//clearInfo(current_vch); // clear channel info
+//		current_vch->id = NULL;
+//		current_vch->flag = 0;
+//		current_vch->count = 0;
+//		current_vch->en = 0;
+//		
+//		// Reconfigure the PIT for the next virtual channel event (if any)
+//		PIT_Stop();
+//		// Find the lowest-enabled channel counter and load it to the PIT value
+//		uint32_t min;
+//		for(int i=0; i<V_CHANNELS; i++){
+//			if (vch_arr[i].en){
+//				min = vch_arr[i].count;
+//				for(int i=0; i<V_CHANNELS; i++){
+//					if (vch_arr[i].count < min && vch_arr[i].en){
+//						min = vch_arr[i].count; 
+//						current_vch = &vch_arr[i];
+//					}
+//				}
+//			}
+//		}
+//		if(current_vch->en){ // virtual channel enabled? min found!
+//			//stop
+//			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count); // set PIT val
+//			PIT_Start();
+//			//update count of all enabled channels
+//			for(int i=0; i<V_CHANNELS; i++){
+//				if(vch_arr[i].en)
+//					vch_arr[i].count -= current_vch->count;
+//			}
+//		}
 		
 		// Call osThreadsFlagsSet to let the thread resume
-		uint32_t result = osThreadFlagsSet(th, flag);
+		//if( current_vch->en ){
+			uint32_t result = osThreadFlagsSet(vch.id, 1);
+		//}
+	}
 		
-		}
 	if (PIT->CHANNEL[1].TFLG & PIT_TFLG_TIF_MASK) {
 		// clear status flag for timer channel 1
 		PIT->CHANNEL[1].TFLG &= PIT_TFLG_TIF_MASK;

@@ -33,11 +33,15 @@ osThreadId_t tid_SlideShow;
 osThreadId_t tid_T1, tid_T2, tid_T3, tid_T4;
 
 void T1(void * argument) {
+	//virtual_PIT_Init(0, 239, osThreadGetId(), 1);
+	//virtual_PIT_Start(0);
 	while (1) {
 		DEBUG_START(DBG_1);
+		
 		// Add code to perform a precision delay of 28 microseconds here
-		virtual_PIT_Init(0, 23999, osThreadGetId(), 1);
-		virtual_PIT_Start(0);
+		//virtual_PIT_Init(0,  23999, osThreadGetId(), 1);
+		PIT_Init( 671, osThreadGetId());
+		PIT_Start();// Start called here
 		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever); //wait for flag and clear it
 		
 		DEBUG_STOP(DBG_1);
@@ -151,7 +155,7 @@ int main(void) {
 	osKernelInitialize();
 #if TEST_PREC_DELAY_ECE560
 	osThreadNew(T1, NULL, NULL);
-	osThreadNew(T2, NULL, NULL);
+	//osThreadNew(T2, NULL, NULL);
 	//osThreadNew(T3, NULL, NULL);
 	//osThreadNew(T4, NULL, NULL);
 #else

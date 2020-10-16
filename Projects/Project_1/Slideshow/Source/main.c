@@ -34,16 +34,11 @@ osThreadId_t tid_T1, tid_T2, tid_T3, tid_T4;
 
 void T1(void * argument) {
 	while (1) {
-		//struct th_info th;
-		//th.id = osThreadGetId();
-		//th.flag = 1;
-		
 		DEBUG_START(DBG_1);
 		// Add code to perform a precision delay of 28 microseconds here
-		PIT_Init(11999999, osThreadGetId(), 1); // 500 ms
-		PIT_Start();
-		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever); //wait for flag and clear it
-		
+		virtual_PIT_Init(0, 23999, osThreadGetId(), 1);
+		virtual_PIT_Start(0);
+		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever); //wait for flag and clear it
 		
 		DEBUG_STOP(DBG_1);
 		osDelay(10); // Wait 10 ms before testing timer channel again
@@ -54,6 +49,9 @@ void T2(void * argument) {
 	while (1) {
 		DEBUG_START(DBG_2);
 		// Add code to perform a precision delay of 10 microseconds here
+		virtual_PIT_Init(1, 11999, osThreadGetId(), 1);
+		virtual_PIT_Start(1);
+		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
 		DEBUG_STOP(DBG_2);
 		osDelay(10); // Wait 10 ms before testing timer channel again
 	}
@@ -63,6 +61,10 @@ void T3(void * argument) {
 	while (1) {
 		DEBUG_START(DBG_3);
 		// Add code to perform a precision delay of 86 microseconds here
+		virtual_PIT_Init(2, 7199999, osThreadGetId(), 1);
+		virtual_PIT_Start(2);
+		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever);
+		
 		DEBUG_STOP(DBG_3);
 		osDelay(10); // Wait 10 ms before testing timer channel again
 	}
@@ -72,6 +74,9 @@ void T4(void * argument) {
 	while (1) {
 		DEBUG_START(DBG_4);
 		// Add code to perform a precision delay of 179 microseconds here
+		virtual_PIT_Init(3, 9599999, osThreadGetId(), 1);
+		virtual_PIT_Start(3);
+		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever);
 		DEBUG_STOP(DBG_4);
 		osDelay(10); // Wait 10 ms before testing timer channel again
 	}
@@ -146,7 +151,7 @@ int main(void) {
 	osKernelInitialize();
 #if TEST_PREC_DELAY_ECE560
 	osThreadNew(T1, NULL, NULL);
-	//osThreadNew(T2, NULL, NULL);
+	osThreadNew(T2, NULL, NULL);
 	//osThreadNew(T3, NULL, NULL);
 	//osThreadNew(T4, NULL, NULL);
 #else

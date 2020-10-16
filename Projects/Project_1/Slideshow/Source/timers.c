@@ -1,7 +1,9 @@
 #include "timers.h"
 #include "MKL25Z4.h"
 
-struct th_info th;
+#define V_CHANNELS 4 // number of virtual channels
+struct vch_info volatile vch_arr[V_CHANNELS]; // array of virtual channels' info
+struct vch_info volatile * volatile current_vch; // pointer to the virtual channel currently using the timer
 
 void PWM_Init(TPM_Type * TPM, uint8_t channel_num, uint16_t period, uint16_t duty)
 {
@@ -86,7 +88,7 @@ void TPM0_IRQHandler(void) {
 	//clear pending IRQ flag
 	TPM0->SC |= TPM_SC_TOF_MASK; 
 }
-void PIT_Init(uint32_t delay, osThreadId_t tid, uint32_t flag ) {
+void PIT_Init(uint32_t period ) {
 	// Enable clock to PIT module
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
 	
@@ -95,7 +97,7 @@ void PIT_Init(uint32_t delay, osThreadId_t tid, uint32_t flag ) {
 	PIT->MCR |= PIT_MCR_FRZ_MASK;
 	
 	// Initialize PIT0 to count down from argument 
-	PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(delay);
+	PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(period);
 
 	// No chaining
 	PIT->CHANNEL[0].TCTRL &= PIT_TCTRL_CHN_MASK;
@@ -107,9 +109,6 @@ void PIT_Init(uint32_t delay, osThreadId_t tid, uint32_t flag ) {
 	NVIC_SetPriority(PIT_IRQn, 128); // 0, 64, 128 or 192
 	NVIC_ClearPendingIRQ(PIT_IRQn); 
 	NVIC_EnableIRQ(PIT_IRQn);
-
-	th.id = tid;
-	th.flag = flag;
 }
 
 
@@ -119,8 +118,72 @@ void PIT_Start(void) {
 }
 
 void PIT_Stop(void) {
-// Enable counter
+// Disable counter
 	PIT->CHANNEL[0].TCTRL &= ~PIT_TCTRL_TEN_MASK;
+}
+
+// Clear virtual channel info
+void clearInfo(struct vch_info *vch){
+	vch->id = NULL;
+	vch->flag = 0;
+	vch->count = 0;
+	vch->en = 0;
+}
+
+void virtual_PIT_Init(uint32_t virtual_channel, uint32_t delay, osThreadId_t tid, uint32_t flag){
+	// if PIT not initialized, do it!
+	if (~(SIM->SCGC6 & SIM_SCGC6_PIT_MASK)){
+		PIT_Init(delay);
+		// initialize array
+		for(int i=0; i<V_CHANNELS; i++){
+			//clearInfo(&vch_arr[i]);
+			vch_arr[i].id = NULL;
+			vch_arr[i].flag = 0;
+			vch_arr[i].count = 0;
+			vch_arr[i].en = 0;
+		}
+	}
+	
+	// Set channel info
+	vch_arr[virtual_channel].id = tid;
+	vch_arr[virtual_channel].flag = flag;
+	vch_arr[virtual_channel].count = delay;
+	
+}
+
+void virtual_PIT_Start(uint32_t virtual_channel){
+	// PIT running?
+	if(PIT->CHANNEL[0].TCTRL & PIT_TCTRL_TEN_MASK){
+		if( vch_arr[virtual_channel].count > PIT->CHANNEL[0].CVAL ){
+			vch_arr[virtual_channel].count -= PIT->CHANNEL[0].CVAL;
+		}else{
+			// run this channel first since it's shorter
+		
+			current_vch = &vch_arr[virtual_channel];
+			PIT_Stop();
+			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count);
+			PIT_Start();
+			uint32_t gap = PIT->CHANNEL[0].CVAL - current_vch->count;
+			// update channels info
+			for(int i=0; i<V_CHANNELS; i++){
+				if(vch_arr[i].en && &vch_arr[i]!=current_vch)
+					vch_arr[virtual_channel].count += gap;
+			}
+			current_vch->count = 0; // clear count
+			
+		}
+	}else{// PIT is disabled, this is the first virtual channel being used
+		current_vch = &vch_arr[virtual_channel];
+		PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count);
+		PIT_Start();
+		current_vch->count = 0; // clear count
+	}
+	
+	vch_arr[virtual_channel].en = 1;
+}
+	
+void virtual_PIT_Stop(uint32_t virtual_channel){
+	vch_arr[virtual_channel].en = 0;
 }
 
 void PIT_IRQHandler(void) {
@@ -132,7 +195,45 @@ void PIT_IRQHandler(void) {
 		// clear status flag for timer channel 0
 		PIT->CHANNEL[0].TFLG &= PIT_TFLG_TIF_MASK;
 		// Do ISR work
-		uint32_t result = osThreadFlagsSet(th.id, th.flag);
+		
+		// Determine which virtual channel caused the interrupt
+		osThreadId_t th = current_vch->id; //(*current_vch).id;
+		uint32_t flag = current_vch->flag;
+		//clearInfo(current_vch); // clear channel info
+		current_vch->id = NULL;
+		current_vch->flag = 0;
+		current_vch->count = 0;
+		current_vch->en = 0;
+		
+		// Reconfigure the PIT for the next virtual channel event (if any)
+		PIT_Stop();
+		// Find the lowest-enabled channel counter and load it to the PIT value
+		uint32_t min;
+		for(int i=0; i<V_CHANNELS; i++){
+			if (vch_arr[i].en){
+				min = vch_arr[i].count;
+				for(int i=0; i<V_CHANNELS; i++){
+					if (vch_arr[i].count < min && vch_arr[i].en){
+						min = vch_arr[i].count; 
+						current_vch = &vch_arr[i];
+					}
+				}
+			}
+		}
+		if(current_vch->en){ // virtual channel enabled? min found!
+			//stop
+			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count); // set PIT val
+			PIT_Start();
+			//update count of all enabled channels
+			for(int i=0; i<V_CHANNELS; i++){
+				if(vch_arr[i].en)
+					vch_arr[i].count -= current_vch->count;
+			}
+		}
+		
+		// Call osThreadsFlagsSet to let the thread resume
+		uint32_t result = osThreadFlagsSet(th, flag);
+		
 		}
 	if (PIT->CHANNEL[1].TFLG & PIT_TFLG_TIF_MASK) {
 		// clear status flag for timer channel 1

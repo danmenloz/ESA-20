@@ -192,7 +192,7 @@ inline void SPI_CS_High(void) {
 
 inline void SPI_Freq_High(void) {
 	//SPI1_BR = 0x05;
-   SPI1_BR = 0x10; // 0x10;
+   SPI1_BR = 0x10; // 0x11 = 6 MHz, 0x12 = 3 MHz, 0x13 = 1.5 MHz
 }
 
 inline void SPI_Freq_Low(void) {

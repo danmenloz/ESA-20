@@ -30,15 +30,14 @@ void Init_ADC(void) {
 	ADC0->SC2 = 0;
 }
 
+static uint16_t xl=0, yu=0;
 
+#if USE_TOUCHSCREEN
 /* Initialize touchscreen hardware (ADC). */
 void LCD_TS_Init(void) {
 	// Configure ADC
 	Init_ADC();
 }
-
-
-static uint16_t xl=0, yu=0;
 
 /* Read touch screen. Returns 1 if touched, and updates position. Else returns 0 leaving 
 position unchanged. */
@@ -170,6 +169,16 @@ void LCD_TS_Blocking_Read(PT_T * position) {
 	}
 	return;
 }
+#else
+void LCD_TS_Init(void) { }
+
+uint32_t LCD_TS_Read(PT_T * position) { 
+	return 0;
+}
+
+void LCD_TS_Blocking_Read(PT_T * position) { }
+
+#endif
 
 #if 0
 /* Test touchscreen by printing touch coordinates and drawing lines where touched. */

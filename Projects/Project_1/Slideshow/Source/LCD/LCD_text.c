@@ -60,7 +60,7 @@ void LCD_Text_Init(uint8_t font_num) {
 //  G_LCD_char_width = 20;
 //  G_LCD_char_height = 31;
 
-#if 1														// This code is working
+#if USE_LARGE_FONT												// This code is working
 	font = Lucida_Console12x19;
 	G_LCD_char_width = 12;
 	G_LCD_char_height = 19;

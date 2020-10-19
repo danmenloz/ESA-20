@@ -38,8 +38,9 @@ void T1(void * argument) {
 		DEBUG_START(DBG_1);
 		
 		// Add code to perform a precision delay of 28 microseconds here
-		virtual_PIT_Init(0, 2399999 , osThreadGetId(), 1);
+		virtual_PIT_Init(0, 71999  , osThreadGetId(), 1);
 		virtual_PIT_Start(0);
+		osThreadFlagsClear(1);
 		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever); //wait for flag and clear it
 		//virtual_PIT_Stop(0);
 		
@@ -53,7 +54,7 @@ void T2(void * argument) {
 		DEBUG_START(DBG_2);
 		
 		// Add code to perform a precision delay of 10 microseconds here
-		virtual_PIT_Init(1,1199999 , osThreadGetId(), 1);
+		virtual_PIT_Init(1, 119999 , osThreadGetId(), 1);
 		virtual_PIT_Start(1);
 		osThreadFlagsClear(1);
 		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
@@ -69,7 +70,7 @@ void T3(void * argument) {
 		DEBUG_START(DBG_3);
 		
 		// Add code to perform a precision delay of 86 microseconds here
-		virtual_PIT_Init(2, 7199999, osThreadGetId(), 1);
+		virtual_PIT_Init(2, 167999, osThreadGetId(), 1);
 		virtual_PIT_Start(2);
 		osThreadFlagsClear(1);
 		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever);
@@ -84,8 +85,9 @@ void T4(void * argument) {
 		DEBUG_START(DBG_4);
 		
 		// Add code to perform a precision delay of 179 microseconds here
-		virtual_PIT_Init(3, 9599999, osThreadGetId(), 1);
+		virtual_PIT_Init(3,  263999, osThreadGetId(), 1);
 		virtual_PIT_Start(3);
+		osThreadFlagsClear(1);
 		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever);
 		
 		DEBUG_STOP(DBG_4);
@@ -164,7 +166,7 @@ int main(void) {
 	osThreadNew(T1, NULL, NULL);
 	osThreadNew(T2, NULL, NULL);
 	osThreadNew(T3, NULL, NULL);
-	//osThreadNew(T4, NULL, NULL);
+	osThreadNew(T4, NULL, NULL);
 #else
 	osThreadNew(Thread_Slideshow, NULL, &SlideShow_attr);
 #endif

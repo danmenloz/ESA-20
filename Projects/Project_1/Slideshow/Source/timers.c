@@ -118,13 +118,13 @@ void PIT_Init(uint32_t period) {
 void PIT_Start(void) {
 // Enable counter
 	PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TEN_MASK;
-	DEBUG_START(DBG_4);
+	//DEBUG_START(DBG_4);
 }
 
 void PIT_Stop(void) {
 // Disable counter
 	PIT->CHANNEL[0].TCTRL &= ~PIT_TCTRL_TEN_MASK;
-	DEBUG_STOP(DBG_4);
+	//DEBUG_STOP(DBG_4);
 }
 
 void virtual_PIT_Init(uint32_t virtual_channel, uint32_t delay, osThreadId_t tid, uint32_t flag){
@@ -309,7 +309,7 @@ void PIT_IRQHandler(void) {
 		// Call osThreadsFlagsSet to let the thread resume
 			uint32_t result = osThreadFlagsSet(th, flag);
 			if(result == flag)
-				DEBUG_TOGGLE(DBG_3);
+				DEBUG_TOGGLE(DBG_5);
 	}
 		
 	if (PIT->CHANNEL[1].TFLG & PIT_TFLG_TIF_MASK) {

@@ -29,21 +29,20 @@ osThreadId_t tid_SlideShow;
 
 #define TEST_PREC_DELAY_ECE560 (1)
 
+#define VIRTUAL_CH0 0x00000000U
+#define VIRTUAL_CH1 0x00000001U
+#define VIRTUAL_CH2 0x00000002U
+#define VIRTUAL_CH3 0x00000003U
+
 #if TEST_PREC_DELAY_ECE560
 osThreadId_t tid_T1, tid_T2, tid_T3, tid_T4;
 
 void T1(void * argument) {
 	
 	while (1) {
-		DEBUG_START(DBG_1);
-		
+		DEBUG_START(DBG_1);	
 		// Add code to perform a precision delay of 28 microseconds here
-		virtual_PIT_Init(0,  671  , osThreadGetId(), 1);
-		virtual_PIT_Start(0);
-		osThreadFlagsClear(1);
-		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever); //wait for flag and clear it
-		//virtual_PIT_Stop(0);
-		
+		precise_delay(VIRTUAL_CH0, 10);
 		DEBUG_STOP(DBG_1);
 		osDelay(10); // Wait 10 ms before testing timer channel again
 	}
@@ -52,15 +51,8 @@ void T1(void * argument) {
 void T2(void * argument) {
 	while (1) {
 		DEBUG_START(DBG_2);
-		
 		// Add code to perform a precision delay of 10 microseconds here
-		// 40us => LDVAL=239, however the smallest working LDVAL=430
-		virtual_PIT_Init(1, 430 , osThreadGetId(), 1);
-		virtual_PIT_Start(1);
-		osThreadFlagsClear(1);
-		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
-		//virtual_PIT_Stop(1);
-		
+		precise_delay(VIRTUAL_CH1, 10);
 		DEBUG_STOP(DBG_2);
 		osDelay(10); // Wait 10 ms before testing timer channel again
 	}
@@ -69,13 +61,8 @@ void T2(void * argument) {
 void T3(void * argument) {
 	while (1) {
 		DEBUG_START(DBG_3);
-		
 		// Add code to perform a precision delay of 86 microseconds here
-		virtual_PIT_Init(2,  2063, osThreadGetId(), 1);
-		virtual_PIT_Start(2);
-		osThreadFlagsClear(1);
-		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever);
-		
+		precise_delay(VIRTUAL_CH2, 86);
 		DEBUG_STOP(DBG_3);
 		osDelay(10); // Wait 10 ms before testing timer channel again
 	}
@@ -84,13 +71,8 @@ void T3(void * argument) {
 void T4(void * argument) {
 	while (1) {
 		DEBUG_START(DBG_4);
-		
 		// Add code to perform a precision delay of 179 microseconds here
-		virtual_PIT_Init(3,  4295, osThreadGetId(), 1);
-		virtual_PIT_Start(3);
-		osThreadFlagsClear(1);
-		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever);
-		
+		precise_delay(VIRTUAL_CH3, 179);
 		DEBUG_STOP(DBG_4);
 		osDelay(10); // Wait 10 ms before testing timer channel again
 	}

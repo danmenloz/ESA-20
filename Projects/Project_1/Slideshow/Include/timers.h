@@ -21,20 +21,18 @@ void LPTMR_Init(void);
 void LPTMR_Start(void);
 void LPTMR_Stop(void);
 
-void PIT_Init(uint32_t period);
-void PIT_Start(void);
-void PIT_Stop(void);
 void PIT_IRQHandler(void);
-void virtual_PIT_Init(uint32_t virtual_channel, uint32_t delay, osThreadId_t tid, uint32_t flag);
-void virtual_PIT_Start(uint32_t virtual_channel);
-void virtual_PIT_Stop(uint32_t virtual_channel);
+void PIT_Init(uint32_t virtual_channel, uint32_t delay, osThreadId_t tid, uint32_t flag);
+void PIT_Start(uint32_t virtual_channel);
+void PIT_Stop(uint32_t virtual_channel);
+void precise_delay(uint32_t virtual_channel, uint32_t delay_usec);
 
 struct vch_info {
 	osThreadId_t id;
 	uint32_t flag;
 	uint32_t count; // counter
 	uint32_t preemptive; // preemtive request
-	uint32_t preempted;
+	uint32_t preempted; // channel preempted?
 	uint32_t p_count; // preempted conter
 };
 	

@@ -38,7 +38,7 @@ void T1(void * argument) {
 		DEBUG_START(DBG_1);
 		
 		// Add code to perform a precision delay of 28 microseconds here
-		virtual_PIT_Init(0, 71999  , osThreadGetId(), 1);
+		virtual_PIT_Init(0,  671  , osThreadGetId(), 1);
 		virtual_PIT_Start(0);
 		osThreadFlagsClear(1);
 		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever); //wait for flag and clear it
@@ -54,7 +54,8 @@ void T2(void * argument) {
 		DEBUG_START(DBG_2);
 		
 		// Add code to perform a precision delay of 10 microseconds here
-		virtual_PIT_Init(1, 119999 , osThreadGetId(), 1);
+		// 40us => LDVAL=239, however the smallest working LDVAL=430
+		virtual_PIT_Init(1, 430 , osThreadGetId(), 1);
 		virtual_PIT_Start(1);
 		osThreadFlagsClear(1);
 		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAny, osWaitForever);
@@ -70,7 +71,7 @@ void T3(void * argument) {
 		DEBUG_START(DBG_3);
 		
 		// Add code to perform a precision delay of 86 microseconds here
-		virtual_PIT_Init(2, 167999, osThreadGetId(), 1);
+		virtual_PIT_Init(2,  2063, osThreadGetId(), 1);
 		virtual_PIT_Start(2);
 		osThreadFlagsClear(1);
 		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever);
@@ -85,7 +86,7 @@ void T4(void * argument) {
 		DEBUG_START(DBG_4);
 		
 		// Add code to perform a precision delay of 179 microseconds here
-		virtual_PIT_Init(3,  263999, osThreadGetId(), 1);
+		virtual_PIT_Init(3,  4295, osThreadGetId(), 1);
 		virtual_PIT_Start(3);
 		osThreadFlagsClear(1);
 		uint32_t result = osThreadFlagsWait(1, osFlagsWaitAll, osWaitForever);

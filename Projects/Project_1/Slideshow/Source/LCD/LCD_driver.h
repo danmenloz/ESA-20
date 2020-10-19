@@ -11,6 +11,9 @@
 #define LCD_CONTROLLER (CTLR_ST7789) 
 // #define LCD_CONTROLLER (CTLR_T6963) 
 
+#define USE_LARGE_FONT (0) // 1 for original 12x19 font, 0 for smaller 8x13 font
+#define USE_TOUCHSCREEN (0) // 1 to enable code for reading touchscreen, 0 to disable 
+
 #define SHIELD_VERSION (12)
 #define MOVED_TS_XL (1) // from PTC1 (V12 board as built) to PTC2
 

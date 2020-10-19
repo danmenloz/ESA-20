@@ -7,6 +7,8 @@
 
 #define LCD_UPDATE_PERIOD 10
 
+#define COMPILE_PIT_STOP 0 // switch to 0 to save code size!
+
 void TPM_Init(unsigned period_ms);
 
 void TPM0_Init(void);
@@ -24,7 +26,9 @@ void LPTMR_Stop(void);
 void PIT_IRQHandler(void);
 void PIT_Init(uint32_t virtual_channel, uint32_t delay, osThreadId_t tid, uint32_t flag);
 void PIT_Start(uint32_t virtual_channel);
+# if COMPILE_PIT_STOP
 void PIT_Stop(uint32_t virtual_channel);
+# endif
 void precise_delay(uint32_t virtual_channel, uint32_t delay_usec);
 
 struct vch_info {

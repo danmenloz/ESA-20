@@ -93,7 +93,7 @@ void precise_delay(uint32_t virtual_channel, uint32_t delay_usec){
 	if (delay_usec>=30)
 		delay_usec -= 30;
 	else 
-		delay_usec = 1; // smallest possible delay. It will be saturated
+		delay_usec = 1; // smalles possible delay. It will be saturated
 	
 	uint32_t ldval = (uint32_t) delay_usec*24-1; // PIT formula
 	uint32_t flag = 0x00000001U;
@@ -181,7 +181,8 @@ void PIT_Start(uint32_t virtual_channel){
 		current_vch = &vch_arr[virtual_channel]; // set current channel
 	}
 }
-	
+
+# if COMPILE_PIT_STOP
 void PIT_Stop(uint32_t virtual_channel){
 	// Big picture: change control to the next virtual channel in line
 	// find next channel
@@ -230,6 +231,7 @@ void PIT_Stop(uint32_t virtual_channel){
 	vch_arr[virtual_channel].preempted = 0;
 	vch_arr[virtual_channel].p_count = 0;
 }
+# endif
 
 void PIT_IRQHandler(void) {
 	//clear pending IRQ

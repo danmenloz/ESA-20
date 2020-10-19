@@ -27,7 +27,7 @@ extern int LCD_JPEG(void);
 
 osThreadId_t tid_SlideShow;
 
-#define TEST_PREC_DELAY_ECE560 (1)
+#define TEST_PREC_DELAY_ECE560 (0)
 
 #define VIRTUAL_CH0 0x00000000U
 #define VIRTUAL_CH1 0x00000001U

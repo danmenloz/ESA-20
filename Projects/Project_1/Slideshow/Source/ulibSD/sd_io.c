@@ -341,7 +341,7 @@ SDRESULTS SD_Read(SD_DEV * dev, void *dat, DWORD sector, WORD ofs,
 		blocks_read++;
 		if (__SD_Send_Cmd(CMD17, sector) == 0) {	// Only for SDHC or SDXC 
 			DEBUG_START(DBG_6);
-			osDelay(2);
+			precise_delay(0, 500); //osDelay(1);
 			SPI_Timer_On(100);
 			do {
 				DEBUG_TOGGLE(DBG_2);

@@ -1,10 +1,11 @@
 #include "timers.h"
 #include "MKL25Z4.h"
+#include "debug.h"
 
 #define V_CHANNELS 4 // number of virtual channels
-struct vch_info volatile vch_arr[V_CHANNELS]; // array of virtual channels' info
-struct vch_info volatile * volatile current_vch; // volatile pointer pointing to volitile data
-struct vch_info volatile vch; 
+struct vch_info volatile vch_arr[V_CHANNELS]; // array of virtual channels' info, volatile struct
+struct vch_info volatile * volatile current_vch; // volatile pointer to volitile struct
+//uint32_t PIT_en = 0;
 
 void PWM_Init(TPM_Type * TPM, uint8_t channel_num, uint16_t period, uint16_t duty)
 {
@@ -89,7 +90,7 @@ void TPM0_IRQHandler(void) {
 	//clear pending IRQ flag
 	TPM0->SC |= TPM_SC_TOF_MASK; 
 }
-void PIT_Init(uint32_t period, osThreadId_t tid ) {
+void PIT_Init(uint32_t period) {
 	// Enable clock to PIT module
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
 	
@@ -111,85 +112,122 @@ void PIT_Init(uint32_t period, osThreadId_t tid ) {
 	NVIC_ClearPendingIRQ(PIT_IRQn); 
 	NVIC_EnableIRQ(PIT_IRQn);
 	
-	vch.id = tid;
-	vch.count = PIT->CHANNEL[0].CVAL;
 }
 
 
 void PIT_Start(void) {
 // Enable counter
 	PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TEN_MASK;
+	DEBUG_START(DBG_4);
 }
 
 void PIT_Stop(void) {
 // Disable counter
 	PIT->CHANNEL[0].TCTRL &= ~PIT_TCTRL_TEN_MASK;
-}
-
-// Clear virtual channel info
-void clearInfo(struct vch_info volatile *vch){
-	vch->id = NULL;
-	vch->flag = 0;
-	vch->count = 0;
-	vch->en = 0;
+	DEBUG_STOP(DBG_4);
 }
 
 void virtual_PIT_Init(uint32_t virtual_channel, uint32_t delay, osThreadId_t tid, uint32_t flag){
-	// if PIT not initialized, do it!
-//	if (~(SIM->SCGC6 & SIM_SCGC6_PIT_MASK)){
-//		PIT_Init(delay);
-//		// initialize array
-//		for(int i=0; i<V_CHANNELS; i++){
-//			//clearInfo(&vch_arr[i]);
-//			vch_arr[i].id = NULL;
-//			vch_arr[i].flag = 0;
-//			vch_arr[i].count = 0;	
-//			vch_arr[i].en = 0;
-//		}
-//	}
-	
+	// if PIT not initialized, do it only once!
+	uint32_t clk_en = (SIM->SCGC6 & SIM_SCGC6_PIT_MASK) >> SIM_SCGC6_PIT_SHIFT;
+	if (clk_en == 0){
+		PIT_Init(delay);
+		// initialize virtual channel array
+		for(int i=0; i<V_CHANNELS; i++){
+			vch_arr[i].id = NULL;
+			vch_arr[i].flag = 0;
+			vch_arr[i].count = 0;	
+			vch_arr[i].preemptive = 0;
+			vch_arr[i].preempted = 0;
+			vch_arr[i].p_count = 0;
+		}
+	}
 	// Set channel info
 	vch_arr[virtual_channel].id = tid;
 	vch_arr[virtual_channel].flag = flag;
 	vch_arr[virtual_channel].count = delay;
-	
 }
 
 void virtual_PIT_Start(uint32_t virtual_channel){
-	// PIT running?
-//	if(PIT->CHANNEL[0].TCTRL & PIT_TCTRL_TEN_MASK){
-//		if( vch_arr[virtual_channel].count > PIT->CHANNEL[0].CVAL ){
-//			vch_arr[virtual_channel].count -= PIT->CHANNEL[0].CVAL;
-//		}else{
-//			// run this channel first since it's shorter
-//		
-//			current_vch = &vch_arr[virtual_channel];
-//			PIT_Stop();
-//			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count);
-//			PIT_Start();
-//			uint32_t gap = PIT->CHANNEL[0].CVAL - current_vch->count;
-//			// update channels info
-//			for(int i=0; i<V_CHANNELS; i++){
-//				if(vch_arr[i].en && &vch_arr[i]!=current_vch)
-//					vch_arr[virtual_channel].count += gap;
-//			}
-//			current_vch->count = 0; // clear count
-//			
-//		}
-//	}else{// PIT is disabled, this is the first virtual channel being used
-//		current_vch = &vch_arr[virtual_channel];
-//		PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count);
-//		PIT_Start();
-//		current_vch->count = 0; // clear count
-//	}
-
-	current_vch = &vch_arr[virtual_channel];
-	PIT_Start();
-	vch_arr[virtual_channel].en = 1;
+	// PIT enabled?
+	//uint32_t PIT_en = (PIT->CHANNEL[0].TCTRL & PIT_TCTRL_TEN_MASK) >> PIT_TCTRL_TEN_SHIFT;
+	if( PIT->CHANNEL[0].TCTRL & PIT_TCTRL_TEN_MASK ) {
+		uint32_t cval = PIT->CHANNEL[0].CVAL; //safe to read CVAL 
+		if( vch_arr[virtual_channel].count > cval ){
+			// don't run channel, wait until the current timer expires
+			vch_arr[virtual_channel].count -= cval;
+		}else{
+			// run this channel immediatly since it's the shortest
+			vch_arr[virtual_channel].preemptive = 1; // this is a preemptive timer
+			
+			// run timer
+			PIT_Stop();
+			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(vch_arr[virtual_channel].count);
+			PIT_Start();
+			
+			vch_arr[virtual_channel].count = cval - vch_arr[virtual_channel].count; // gap
+			current_vch->preempted = 1; // set preempted field
+			current_vch->p_count = current_vch->count; // save channel count to be restored later
+			current_vch->count = vch_arr[virtual_channel].count; // temporarily store gap in the current channel's counter
+			current_vch = &vch_arr[virtual_channel]; //change current channel		
+		}
+	}else{// PIT is disabled, only one virtual channel is being used
+		// run timer
+		PIT_Stop();
+		PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(vch_arr[virtual_channel].count);
+		PIT_Start();
+		vch_arr[virtual_channel].count = 0; // clear count since no pending channel requests
+		current_vch = &vch_arr[virtual_channel]; // set current channel
+	}
 }
 	
 void virtual_PIT_Stop(uint32_t virtual_channel){
-	vch_arr[virtual_channel].en = 0;
+	// Big picture: change control to the next virtual channel in line
+	// find next channel
+	struct vch_info volatile *min = &vch_arr[virtual_channel]; // pointer to volatile struct
+	min->count = 0; //clear count to disable channel
+	uint32_t pending = 0;
+	// first find an enabled channel
+	for(int i=0; i<V_CHANNELS; i++){
+		if(vch_arr[i].count > 0){ // 0 means virtual channel is disabled
+			min = &vch_arr[i];
+			pending++;
+		}
+	}
+	if(pending){ // at least one pending channel request found!
+		// find minimum
+		for(int i=0; i<V_CHANNELS; i++){
+			if(vch_arr[i].count < min->count  &&  vch_arr[i].count>0)
+				min = &vch_arr[i];
+		}
+		// change control to next channel request
+		if(PIT->CHANNEL[0].TCTRL & PIT_TCTRL_TEN_MASK){ // check if PIT is running, it should be
+			// run next channel
+			PIT_Stop();
+			uint32_t cval = PIT->CHANNEL[0].CVAL; //safe to read CVAL 
+			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV( min->count + cval ); //load timer value
+			PIT_Start();  	
+			// update all pending requests with new baseline
+			if (pending>1 && !min->preemptive){ 
+				for(int i=0; i<V_CHANNELS; i++){
+					if ( vch_arr[i].count>0 && min!=&vch_arr[i] )
+						vch_arr[i].count -= min->count;
+				}
+			}else{ // no pending requests
+				min->count = 0; 
+			}
+			current_vch = min; // update current channel		
+		}
+	}else{ //only this virtual channel was running
+		PIT_Stop(); 
+	}
+	//clear fields
+	vch_arr[virtual_channel].id = NULL;
+	vch_arr[virtual_channel].flag = 0;
+	vch_arr[virtual_channel].count = 0;	
+	vch_arr[virtual_channel].preemptive = 0;
+	vch_arr[virtual_channel].preempted = 0;
+	vch_arr[virtual_channel].p_count = 0;
 }
 
 void PIT_IRQHandler(void) {
@@ -202,45 +240,76 @@ void PIT_IRQHandler(void) {
 		PIT->CHANNEL[0].TFLG &= PIT_TFLG_TIF_MASK;
 		// Do ISR work
 		
-//		// Determine which virtual channel caused the interrupt
-//		osThreadId_t th = current_vch->id; //(*current_vch).id;
-//		uint32_t flag = current_vch->flag;
-//		//clearInfo(current_vch); // clear channel info
-//		current_vch->id = NULL;
-//		current_vch->flag = 0;
-//		current_vch->count = 0;
-//		current_vch->en = 0;
-//		
-//		// Reconfigure the PIT for the next virtual channel event (if any)
-//		PIT_Stop();
-//		// Find the lowest-enabled channel counter and load it to the PIT value
-//		uint32_t min;
-//		for(int i=0; i<V_CHANNELS; i++){
-//			if (vch_arr[i].en){
-//				min = vch_arr[i].count;
-//				for(int i=0; i<V_CHANNELS; i++){
-//					if (vch_arr[i].count < min && vch_arr[i].en){
-//						min = vch_arr[i].count; 
-//						current_vch = &vch_arr[i];
-//					}
-//				}
-//			}
-//		}
-//		if(current_vch->en){ // virtual channel enabled? min found!
-//			//stop
-//			PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(current_vch->count); // set PIT val
-//			PIT_Start();
-//			//update count of all enabled channels
-//			for(int i=0; i<V_CHANNELS; i++){
-//				if(vch_arr[i].en)
-//					vch_arr[i].count -= current_vch->count;
-//			}
-//		}
+		// Determine which virtual channel caused the interrupt
+		osThreadId_t th = current_vch->id; //(*current_vch).id;
+		uint32_t flag = current_vch->flag;
+		
+		// Reconfigure the PIT for the next virtual channel event (if any)
+		// Find the lowest-enabled channel counter and load it to the PIT value
+		struct vch_info volatile *min = current_vch; // pointer to volatile struct
+		uint32_t pending = 0;
+		// first find an enabled channel
+		for(int i=0; i<V_CHANNELS; i++){
+			if(vch_arr[i].count>0 && &vch_arr[i]!=current_vch){ // enabled and !current
+				min = &vch_arr[i];
+				pending++;
+			}
+		}
+		if(pending){ // at least one pending request found
+			// find minimum
+			for(int i=0; i<V_CHANNELS; i++){
+				if(vch_arr[i].count < min->count && vch_arr[i].count>0 && &vch_arr[i]!=current_vch)
+					min = &vch_arr[i];
+			}
+			//min is the next request
+			if (current_vch->preemptive){
+				current_vch->preemptive = 0; // clear preemptive field
+				// run channel
+				PIT_Stop();
+				PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV( min->count ); //load timer value
+				PIT_Start();
+				if(min->preempted){// channel request was preempted?
+					min->preempted = 0; //clear preempted field
+					min->count = min->p_count; //restore counter before preemption
+				}
+				current_vch = min; //update current channel
+			}else{ //!preemptive
+				min->count -= current_vch->count;
+				
+				//clear channel
+				current_vch->id = NULL;
+				current_vch->flag = 0;
+				current_vch->count = 0;	
+				current_vch->preemptive = 0;
+				current_vch->preempted = 0;
+				current_vch->p_count = 0;
+				
+				// run channel
+				PIT_Stop();
+				PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV( min->count ); //load timer value
+				PIT_Start();
+				
+				current_vch = min; //update current channel
+				// search pending requests
+				if (pending<=1)// no other pending requests?
+					current_vch->count = 0; // count no longer needed since no pending requests
+			}
+		}
+		else{ // no pending requests
+			PIT_Stop();
+			//clear channel
+			current_vch->id = NULL;
+			current_vch->flag = 0;
+			current_vch->count = 0;	
+			current_vch->preemptive = 0;
+			current_vch->preempted = 0;
+			current_vch->p_count = 0;
+		}
 		
 		// Call osThreadsFlagsSet to let the thread resume
-		//if( current_vch->en ){
-			uint32_t result = osThreadFlagsSet(vch.id, 1);
-		//}
+			uint32_t result = osThreadFlagsSet(th, flag);
+			if(result == flag)
+				DEBUG_TOGGLE(DBG_3);
 	}
 		
 	if (PIT->CHANNEL[1].TFLG & PIT_TFLG_TIF_MASK) {

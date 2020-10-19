@@ -21,7 +21,7 @@ void LPTMR_Init(void);
 void LPTMR_Start(void);
 void LPTMR_Stop(void);
 
-void PIT_Init(uint32_t period, osThreadId_t tid);
+void PIT_Init(uint32_t period);
 void PIT_Start(void);
 void PIT_Stop(void);
 void PIT_IRQHandler(void);
@@ -33,10 +33,10 @@ struct vch_info {
 	osThreadId_t id;
 	uint32_t flag;
 	uint32_t count; // counter
-	uint32_t en; // enable
+	uint32_t preemptive; // preemtive request
+	uint32_t preempted;
+	uint32_t p_count; // preempted conter
 };
-
-void clearInfo(struct vch_info volatile *vch);
 	
 #endif
 

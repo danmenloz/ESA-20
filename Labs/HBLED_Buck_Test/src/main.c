@@ -6,7 +6,7 @@
 		RGB LED flashes yellow
 		HBLED brightness ramps up for about 4 seconds then down for 4 seconds
 
-	Test 2: Closed Loop (remainig time)
+	Test 2: Closed Loop (remaining time)
 		RGB is solid green
 		HBLED flashes for about 510 us about every 411 ms
  *----------------------------------------------------------------------------*/

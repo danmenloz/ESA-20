@@ -3,8 +3,8 @@
  * Auto generated Run-Time-Environment Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'TFT-TS-BL-Profiler-RTX-CMSIS' 
- * Target:  'TFT LCD' 
+ * Project: 'Mem_Pool_Demo' 
+ * Target:  'Target 1' 
  */
 
 #ifndef RTE_COMPONENTS_H

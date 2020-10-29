@@ -82,7 +82,7 @@ void Thread_Read_TS(void * arg) {
 				if (p.X < LCD_WIDTH/2) {
 					Sound_Disable_Amp();
 				} else {
-					// HACK Sound_Enable_Amp();
+					Sound_Enable_Amp();
 				}
 			} else {		
 				// Now draw on screen
@@ -108,7 +108,12 @@ void Thread_Read_TS(void * arg) {
 	while (1) {
 		read_full_xyz();
 		convert_xyz_to_roll_pitch();
-
+		
+		if (roll > 20)
+			Sound_Disable_Amp();
+		else if (roll < -20)
+			Sound_Enable_Amp();
+		
 		sprintf(buffer, "Roll: %6.2f", roll);
 		osMutexAcquire(LCD_mutex, osWaitForever);
 		LCD_Text_PrintStr_RC(2, 0, buffer);

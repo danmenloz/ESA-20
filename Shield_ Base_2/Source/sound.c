@@ -207,7 +207,7 @@ void Play_Waveform_with_DMA(void) {
 	while (1) {
 		DEBUG_STOP(DBG_TREFILLSB_POS);
 		osThreadFlagsWait(EV_REFILL_SOUND_BUFFER, osFlagsWaitAny, osWaitForever); // wait for trigger
-//		DEBUG_START(DBG_TREFILLSB_POS);
+		DEBUG_START(DBG_TREFILLSB_POS);
 		for (i=0; i<NUM_WAVEFORM_SAMPLES; i++) {
 			sum = 0;
 			for (v=0; v<NUM_VOICES; v++) {
@@ -225,7 +225,8 @@ void Play_Waveform_with_DMA(void) {
 			sum = MIN(sum, MAX_DAC_CODE-1);
 			Waveform[write_buffer_num][i] = sum; 
 			DEBUG_STOP(DBG_IRQDMA_POS);
-			DEBUG_START(DBG_TREFILLSB_POS);
+			DEBUG_TOGGLE(DBG_TREFILLSB_POS);
+			DEBUG_TOGGLE(DBG_TREFILLSB_POS);
 		}
 #if USE_DOUBLE_BUFFER
 		write_buffer_num = 1 - write_buffer_num;

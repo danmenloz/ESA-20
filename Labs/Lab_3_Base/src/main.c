@@ -19,7 +19,7 @@ volatile int g_set_current=0;
 volatile int g_flash_current_mA = FLASH_CURRENT_MA;
 
 volatile int measured_current;
-volatile int16_t g_duty_cycle=20;  // global to give debugger access
+volatile int16_t g_duty_cycle=100;  // global to give debugger access
 volatile int error;
 enum {OpenLoop, BangBang, Incremental, Proportional, PID, PID_FX}
 	control_mode=DEF_CONTROL_MODE;

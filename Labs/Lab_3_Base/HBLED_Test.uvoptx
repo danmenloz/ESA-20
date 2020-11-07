@@ -205,6 +205,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>g_flash_current_mA,0x0A</ItemText>
         </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>g_duty_cycle</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>

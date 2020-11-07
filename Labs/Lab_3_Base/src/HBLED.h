@@ -50,7 +50,7 @@
 
 // Control Parameters
 // default control mode: OpenLoop, BangBang, Incremental, PID, PID_FX
-#define DEF_CONTROL_MODE (OpenLoop) 
+#define DEF_CONTROL_MODE (BangBang) 
 
 // Incremental controller: change amount
 #define INC_STEP (PWM_PERIOD/20)

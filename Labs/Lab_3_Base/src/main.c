@@ -1,4 +1,14 @@
 /*----------------------------------------------------------------------------
+ Test code for driving HBLED with buck converter.
+ Be sure jumper is on J11 to connect Buck VIn to either 3.3V or 5V
+
+	Test 1: Open Loop (about 8 seconds)
+		RGB LED flashes yellow
+		HBLED brightness ramps up for about 4 seconds then down for 4 seconds
+
+	Test 2: Closed Loop (remaining time)
+		RGB is solid green
+		HBLED flashes for about 510 us about every 411 ms
  *----------------------------------------------------------------------------*/
 #include <MKL25Z4.H>
 #include <stdio.h>
@@ -120,7 +130,7 @@ void Control_HBLED(void) {
 #endif
 	res = ADC0->R[0];
 
-	measured_current = (res*1500)>>16; // To Do: Make this code work: V_REF_MV*MA_SCALING_FACTOR)/(ADC_FULL_SCALE*R_SENSE)
+	measured_current = (res*1500)>>16; // Extra Credit: Make this code work: V_REF_MV*MA_SCALING_FACTOR)/(ADC_FULL_SCALE*R_SENSE)
 
 	switch (control_mode) {
 		case OpenLoop:
@@ -257,26 +267,48 @@ void Update_Set_Current(void) {
   MAIN function
  *----------------------------------------------------------------------------*/
 int main (void) {
+	int i;
+	
 	Init_Debug_Signals();
 	Init_DAC();
 	Init_ADC();
 	Init_RGB_LEDs();
 
+	__disable_irq();
+
+	// Yellow: try driving LED and buck converter open-loop
+	Control_RGB_LEDs(1,1,0);
 	
 	// Configure driver for buck converter
 	// Set up PTE31 to use for SMPS with TPM0 Ch 4
 	SIM->SCGC5 |= SIM_SCGC5_PORTE_MASK;
 	PORTE->PCR[31]  &= PORT_PCR_MUX(7);
 	PORTE->PCR[31]  |= PORT_PCR_MUX(3);
-	PWM_Init(TPM0, PWM_HBLED_CHANNEL, PWM_PERIOD, 40);
-	
-	Control_RGB_LEDs(1,1,0);
-	Delay(100);
-	Control_RGB_LEDs(0,0,1);	
+
+	PWM_Init(TPM0, PWM_HBLED_CHANNEL, PWM_PERIOD, 10);
+
+	// Test 1
+	for (i=1; i<50; i+=2) {
+		PWM_Set_Value(TPM0, PWM_HBLED_CHANNEL, i);
+		Control_RGB_LEDs(i&1, i&1, 0);	
+		Delay(100);
+	}
+
+	for (i=50; i>0; i-=2) {
+		PWM_Set_Value(TPM0, PWM_HBLED_CHANNEL, i);
+		Control_RGB_LEDs(i&1, i&1, 0);	
+		Delay(100);
+	}
+
+	// Test 2
+	// Green: try driving LED and buck converter closed-loop
+	Control_RGB_LEDs(0,1,0);	
 	
 	// Configure flash timer
-	Init_PIT(123456);
+	Init_PIT(12345);
 	Start_PIT();	
+	
+	__enable_irq();
 	
 	while (1) {
 #if USE_ASYNC_SAMPLING
@@ -285,6 +317,7 @@ int main (void) {
 		Control_HBLED(); // Blocks until ADC done, then updates control
 #endif
 		// else do nothing but wait for interrupts
+		FPTB->PTOR = MASK(DBG_IDLE); // TODO: Delete this!!
 	}
 }
 

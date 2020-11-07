@@ -19,8 +19,8 @@
 #define DBG_IRQ_TPM	DBG_3 
 #define DBG_IRQ_ADC	DBG_4 
 #define DBG_IRQ_PIT	DBG_5 
-// #define DBG_	DBG_6
-// #define DBG_	DBG_7   
+#define DBG_IDLE		DBG_6
+//#define DBG_	DBG_7   
 
 void Init_Debug_Signals(void);
 

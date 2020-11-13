@@ -15,7 +15,7 @@
 #define USE_TOUCHSCREEN (1) // 1 to enable code for reading touchscreen, 0 to disable 
 
 #define SHIELD_VERSION (12)
-#define MOVED_TS_XL (1) // from PTC1 (V12 board as built) to PTC2
+#define MOVED_TS_XL (0) // from PTC1 (V12 board as built) to PTC2
 
 // Backlight
 #define LCD_BL_TPM (TPM1)

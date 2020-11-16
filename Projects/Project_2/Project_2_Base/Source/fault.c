@@ -7,7 +7,7 @@
 
 osThreadId_t t_Fault;
 const osThreadAttr_t Fault_attr = {
-  .priority = osPriorityAboveNormal            
+  .priority = osPriorityAboveNormal         
 };
 
 typedef enum {
@@ -137,7 +137,7 @@ void Thread_Fault_Injector(void * arg) {
 	char msg[24];
 	
 	// Any first run initialization goes here
-	osDelay(FAULT_PERIOD);
+	osDelay(FAULT_PERIOD + FLASH_DURATION_MS/(2*THREAD_BUS_PERIOD_MS));
 	
 	while (1) {
 		test = Fault_Tests[test_num];

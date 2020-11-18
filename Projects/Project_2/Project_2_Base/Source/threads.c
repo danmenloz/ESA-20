@@ -29,7 +29,8 @@ void Thread_Buck_Update_Setpoint(void * arg);
 
 osThreadId_t t_Read_TS, t_Sound_Manager, t_US, t_Refill_Sound_Buffer, t_BUS, t_ADC;
 
-// Thread priority options: osPriority[RealTime|High|AboveNormal|Normal|BelowNormal|Low|Idle]
+// Basic thread priority options: osPriority[RealTime|High|AboveNormal|Normal|BelowNormal|Low|Idle]
+// Each can have 1-7 appended for finer resolution
 
 const osThreadAttr_t Read_TS_attr = {
   .priority = osPriorityNormal            
@@ -41,10 +42,6 @@ const osThreadAttr_t Update_Screen_attr = {
 };
 
 const osThreadAttr_t BUS_attr = {
-  .priority = osPriorityAboveNormal            
-};
-
-const osThreadAttr_t ADC_attr = {
   .priority = osPriorityAboveNormal            
 };
 

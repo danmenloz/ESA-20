@@ -42,7 +42,7 @@ const osThreadAttr_t Update_Screen_attr = {
 };
 
 const osThreadAttr_t BUS_attr = {
-  .priority = osPriorityAboveNormal            
+  .priority = osPriorityHigh           
 };
 
 osMutexId_t LCD_mutex;

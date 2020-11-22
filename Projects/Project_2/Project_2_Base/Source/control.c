@@ -182,7 +182,7 @@ void Control_HBLED(void) {
 				break;
 			case PID_FX:
 				error_FX = INT_TO_FX(Read_Set_Current() - g_measured_current);
-				change_FX = UpdatePID_FX(&plantPID_FX, error_FX, INT_TO_FX(g_measured_current));
+				change_FX = UpdatePID_FX(Read_SPidFX(&plantPID_FX), error_FX, INT_TO_FX(g_measured_current));
 				g_duty_cycle += FX_TO_INT(change_FX);
 			break;
 			default:

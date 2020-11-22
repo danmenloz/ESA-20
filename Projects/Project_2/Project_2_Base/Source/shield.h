@@ -10,3 +10,4 @@ extern volatile int g_set_current; // Default starting LED current
 
 void Write_Set_Current(int new_value);
 int Read_Set_Current(void);
+SPidFX * Read_SPidFX(SPidFX * pid);

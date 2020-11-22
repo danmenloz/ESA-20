@@ -33,3 +33,11 @@ int Read_Set_Current(void){
 	return m;
 	
 }
+
+SPidFX * Read_SPidFX(SPidFX * pid){
+	// Scrub fixed gains
+	pid->pGain = P_GAIN_FX;
+	pid->iGain = I_GAIN_FX;
+	pid->dGain = D_GAIN_FX;
+	return pid;
+}

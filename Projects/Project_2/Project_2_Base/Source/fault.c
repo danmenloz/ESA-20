@@ -31,10 +31,10 @@ typedef enum {
 
 
 Fault_Test_E Fault_Tests[] = {
-	TR_Setpoint_High,
-	TR_Setpoint_Zero,
-	TR_End,
+	//TR_Setpoint_High,
+	//TR_Setpoint_Zero,
 	TR_PID_FX_Gains,
+	TR_End,
 	TR_LCD_mutex,
 	TR_Disable_All_IRQs,
 	TR_Disable_ADC_IRQ,

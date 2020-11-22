@@ -33,6 +33,7 @@ typedef enum {
 Fault_Test_E Fault_Tests[] = {
 	TR_Setpoint_High,
 	TR_Setpoint_Zero,
+	TR_End,
 	TR_PID_FX_Gains,
 	TR_LCD_mutex,
 	TR_Disable_All_IRQs,
@@ -43,8 +44,8 @@ Fault_Test_E Fault_Tests[] = {
 	TR_osKernelLock,
 	TR_High_Priority_Thread,
 	TR_Change_MCU_Clock,
-	TR_Slow_TPM,
-	TR_End
+	TR_Slow_TPM
+	
 };	
 
 int Fault_Recursion_Test(int level) {

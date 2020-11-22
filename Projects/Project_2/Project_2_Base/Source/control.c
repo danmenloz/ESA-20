@@ -14,6 +14,8 @@
 
 #include "FX.h"
 
+#include "shield.h"
+
 // volatile __align(4) int16_t g_duty_cycle=5;  // global to give debugger access
 volatile int g_duty_cycle=5;  // global to give debugger access
 
@@ -135,7 +137,7 @@ void Control_HBLED(void) {
 		// Trigger on set point low-to-high if armed.
 		if ((g_trigger_pt == TRIG_ARMED) && 													/* Check if we're armed */
 				(g_set_current_sample > prev_set_current_sample) &&     	/* check for rising edge */
-				(g_set_current > (g_peak_set_current/2) ) ) 							/* Check for threshold */
+				(Read_Set_Current() > (g_peak_set_current/2) ) ) 							/* Check for threshold */
 				g_trigger_pt=curr_sample;
 #else
 		threshold = g_peak_set_current>>3;
@@ -161,25 +163,25 @@ void Control_HBLED(void) {
 					// don't do anything!
 				break;
 			case BangBang:
-				if (g_measured_current < g_set_current)
+				if (g_measured_current < Read_Set_Current())
 					g_duty_cycle = LIM_DUTY_CYCLE;
 				else
 					g_duty_cycle = 0;
 				break;
 			case Incremental:
-				if (g_measured_current < g_set_current)
+				if (g_measured_current < Read_Set_Current())
 					g_duty_cycle += INC_STEP;
 				else
 					g_duty_cycle -= INC_STEP;
 				break;
 			case Proportional:
-				g_duty_cycle += (pGain_8*(g_set_current - g_measured_current))/256; //  - 1;
+				g_duty_cycle += (pGain_8*(Read_Set_Current() - g_measured_current))/256; //  - 1;
 			break;
 			case PID:
-				g_duty_cycle += UpdatePID(&plantPID, g_set_current - g_measured_current, g_measured_current);
+				g_duty_cycle += UpdatePID(&plantPID, Read_Set_Current() - g_measured_current, g_measured_current);
 				break;
 			case PID_FX:
-				error_FX = INT_TO_FX(g_set_current - g_measured_current);
+				error_FX = INT_TO_FX(Read_Set_Current() - g_measured_current);
 				change_FX = UpdatePID_FX(&plantPID_FX, error_FX, INT_TO_FX(g_measured_current));
 				g_duty_cycle += FX_TO_INT(change_FX);
 			break;
@@ -282,12 +284,12 @@ void Old_Update_Set_Current(void) {
 	if (g_enable_flash){
 		delay--;
 		if (delay == g_flash_duration) { // assumes runs every 1 ms
-			g_set_current = g_peak_set_current;
-			Set_DAC_mA(g_set_current);
+			Write_Set_Current(g_peak_set_current);
+			Set_DAC_mA(Read_Set_Current());
 		} else  if (delay == 0) {
 			delay = g_flash_period;
-			g_set_current = 0;
-			Set_DAC_mA(g_set_current);
+			Write_Set_Current(0);
+			Set_DAC_mA(Read_Set_Current());
 		}
 	}
 }
@@ -299,14 +301,14 @@ void Update_Set_Current(void) {
 	if (g_enable_flash){
 		t++;
 		if (t <= g_flash_duration/2) {
-			g_set_current += 3;
+			Write_Set_Current(Read_Set_Current()+3);
 		}	else if (t < g_flash_duration) {
-			if (g_set_current > 0)
-				g_set_current -= 3;
+			if (Read_Set_Current() > 0)
+				Write_Set_Current(Read_Set_Current()-3);
 		} else {
-			g_set_current = 0;
+			Write_Set_Current(0);
 		}
-		Set_DAC_mA(g_set_current);
+		Set_DAC_mA(Read_Set_Current());
 		if (t >= g_flash_period)
 			t = 0;
 	}

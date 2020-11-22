@@ -498,6 +498,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\fault.c</FilePath>
             </File>
+            <File>
+              <FileName>shield.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\shield.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

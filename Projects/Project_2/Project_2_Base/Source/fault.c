@@ -42,9 +42,9 @@ Fault_Test_E Fault_Tests[] = {
 	//TR_Disable_PeriphClocks,
 	//TR_osKernelLock,
 	//TR_High_Priority_Thread,
-	TR_Change_MCU_Clock,
-	TR_End,
-	TR_Slow_TPM
+	//TR_Change_MCU_Clock,
+	TR_Slow_TPM,
+	TR_End
 	
 };	
 

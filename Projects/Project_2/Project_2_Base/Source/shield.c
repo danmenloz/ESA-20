@@ -4,6 +4,7 @@
 
 static int set_current[N_COPIES+1]; // original value saved at index 0
 static uint8_t initial_MCG_C6;
+static uint32_t initial_TPM0_MOD;
 
 osEventFlagsId_t evflags_id; //event flags
 
@@ -71,6 +72,8 @@ void Shield_Init(void){
 	
 	initial_MCG_C6 = ~MCG->C6; // store complement
 	t_CLK = osThreadNew(Thread_Check_CLK, NULL, &CLK_attr);
+	
+	initial_TPM0_MOD = ~(TPM0->MOD);
 }
 
 void Thread_Service_WDT(void * arg) {
@@ -84,6 +87,7 @@ void Thread_Service_WDT(void * arg) {
 
 void Thread_Check_CLK(void * arg) {
 	while(1){
+		TPM0->MOD = ~initial_TPM0_MOD; // scrub TPM0
 		if ((MCG->C6 ^ initial_MCG_C6) == 0xff){
 			osDelay(10); // how often to check?
 		}else{

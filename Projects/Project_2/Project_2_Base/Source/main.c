@@ -21,6 +21,7 @@
 #include "profile.h"
 #include "control.h"
 #include "fault.h"
+#include "shield.h"
 
 volatile CTL_MODE_E control_mode=DEF_CONTROL_MODE;
 
@@ -28,31 +29,18 @@ volatile CTL_MODE_E control_mode=DEF_CONTROL_MODE;
   MAIN function
  *----------------------------------------------------------------------------*/
 int main (void) {
-
-	Init_Debug_Signals();
-	Init_RGB_LEDs();
-	Control_RGB_LEDs(0,0,1);			
-	
-	Sound_Disable_Amp();
-	
-	LCD_Init();
-	LCD_Text_Init(1);
-	LCD_Erase();
-	
-	LCD_Erase();
-	LCD_Text_PrintStr_RC(0,0, "Test Code");
-
-#if 0
-	// LCD_TS_Calibrate();
-	LCD_TS_Test();
-#endif
-	Delay(70);
-	LCD_Erase();
-
-	Init_Buck_HBLED();
-	
-	osKernelInitialize();
-	Fault_Init();
-	Create_OS_Objects();
-	osKernelStart();	
+ Init_Debug_Signals();
+ Init_RGB_LEDs();
+ Control_RGB_LEDs(0,0,1);   
+ Sound_Disable_Amp();
+ LCD_Init();
+ LCD_Text_Init(1);
+ LCD_Erase();
+ Init_Buck_HBLED();
+ 
+ osKernelInitialize();
+ Fault_Init();
+ Shield_Init();
+ Create_OS_Objects();
+ osKernelStart();
 }

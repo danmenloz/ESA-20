@@ -20,12 +20,15 @@
 #include "ADC.h"
 
 #include "fault.h"
+#include "shield.h"
 
 void Thread_Read_TS(void * arg); // 
 void Thread_Update_Screen(void * arg); // 
 void Thread_Sound_Manager(void * arg); // 
 void Thread_Refill_Sound_Buffer(void * arg); //
 void Thread_Buck_Update_Setpoint(void * arg);
+
+extern osEventFlagsId_t evflags_id;
 
 osThreadId_t t_Read_TS, t_Sound_Manager, t_US, t_Refill_Sound_Buffer, t_BUS;
 
@@ -66,6 +69,7 @@ void Thread_Read_TS(void * arg) {
 	
 	while (1) {
 		// DEBUG_START(DBG_TREADTS);
+		osEventFlagsSet(evflags_id, F_READ_TS);
 		if (LCD_TS_Read(&p)) { 
 			UI_Process_Touch(&p);
 		}
@@ -80,6 +84,7 @@ void Thread_Read_TS(void * arg) {
 	 
 	while (1) {
 		DEBUG_START(DBG_TUPDATESCR);
+		osEventFlagsSet(evflags_id, F_US);
 		UI_Draw_Screen(0);
 		DEBUG_STOP(DBG_TUPDATESCR);
 		osDelay(THREAD_UPDATE_SCREEN_PERIOD_MS);
@@ -88,6 +93,7 @@ void Thread_Read_TS(void * arg) {
 
  void Thread_Buck_Update_Setpoint(void * arg) {
 	while (1) {
+		osEventFlagsSet(evflags_id, F_BUS);
 		osDelay(THREAD_BUS_PERIOD_MS);
 		Update_Set_Current();
 	}

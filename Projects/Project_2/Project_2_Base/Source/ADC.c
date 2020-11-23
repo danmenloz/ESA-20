@@ -15,6 +15,8 @@
 #include "FX.h"
 #include "ADC.h"
 
+#include "shield.h"
+
 osMessageQueueId_t  ADC_RequestQueue;
 osMessageQueueId_t  ADC_ResponseQueue;
 
@@ -33,6 +35,7 @@ void ADC0_IRQHandler() {
 	volatile static uint16_t t1,t2;
 	int diff=0;
 	DEBUG_START(DBG_IRQ_ADC);
+	osEventFlagsSet(evflags_id, F_ADC0);
 
 	if (modeHBLED) {
 		Control_HBLED();

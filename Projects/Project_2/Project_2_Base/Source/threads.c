@@ -28,8 +28,6 @@ void Thread_Sound_Manager(void * arg); //
 void Thread_Refill_Sound_Buffer(void * arg); //
 void Thread_Buck_Update_Setpoint(void * arg);
 
-extern osEventFlagsId_t evflags_id;
-
 osThreadId_t t_Read_TS, t_Sound_Manager, t_US, t_Refill_Sound_Buffer, t_BUS;
 
 // Basic thread priority options: osPriority[RealTime|High|AboveNormal|Normal|BelowNormal|Low|Idle]

@@ -69,7 +69,7 @@ void Shield_Init(void){
 void Thread_Service_WDT(void * arg) {
 	while(1){
 		uint32_t flags = osEventFlagsWait(evflags_id, 
-							F_READ_TS | F_US | F_BUS,
+							F_READ_TS | F_US | F_BUS | F_ADC0,
 							osFlagsWaitAll, osWaitForever);
 		Service_COP_WDT();
 	}

@@ -37,13 +37,13 @@ Fault_Test_E Fault_Tests[] = {
 	//TR_LCD_mutex,
 	//TR_Disable_All_IRQs,
 	//TR_Disable_ADC_IRQ,
-	TR_Stack_Overflow,
-	TR_End,
-	TR_Fill_Queue, 
-	TR_Disable_PeriphClocks,
-	TR_osKernelLock,
-	TR_High_Priority_Thread,
+	//TR_Stack_Overflow,
+	//TR_Fill_Queue,
+	//TR_Disable_PeriphClocks,
+	//TR_osKernelLock,
+	//TR_High_Priority_Thread,
 	TR_Change_MCU_Clock,
+	TR_End,
 	TR_Slow_TPM
 	
 };	

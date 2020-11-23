@@ -3,12 +3,16 @@
 #define N_COPIES  (2)
 
 static int set_current[N_COPIES+1]; // original value saved at index 0
+static uint8_t initial_MCG_C6;
 
 osEventFlagsId_t evflags_id; //event flags
 
-osThreadId_t t_WDT;
+osThreadId_t t_WDT, t_CLK;
 const osThreadAttr_t WDT_attr = {
   .priority = osPriorityBelowNormal           
+};
+const osThreadAttr_t CLK_attr = {
+  .priority = osPriorityHigh          
 };
 
 
@@ -64,13 +68,27 @@ void Shield_Init(void){
 	evflags_id = osEventFlagsNew(NULL);
 	t_WDT = osThreadNew(Thread_Service_WDT, NULL, &WDT_attr);
 	Init_COP_WDT();
+	
+	initial_MCG_C6 = ~MCG->C6; // store complement
+	t_CLK = osThreadNew(Thread_Check_CLK, NULL, &CLK_attr);
 }
 
 void Thread_Service_WDT(void * arg) {
 	while(1){
 		uint32_t flags = osEventFlagsWait(evflags_id, 
-							F_READ_TS | F_US | F_BUS | F_ADC0,
+							F_READ_TS | F_US | F_BUS,// | F_ADC0,
 							osFlagsWaitAll, osWaitForever);
 		Service_COP_WDT();
+	}
+}
+
+void Thread_Check_CLK(void * arg) {
+	while(1){
+		if ((MCG->C6 ^ initial_MCG_C6) == 0xff){
+			osDelay(10); // how often to check?
+		}else{
+			// scrub CLK freq since they don't match!
+			MCG->C6 = ~initial_MCG_C6;
+		}			
 	}
 }

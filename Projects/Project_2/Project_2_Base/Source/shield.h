@@ -25,3 +25,5 @@ void Init_COP_WDT(void);
 void Shield_Init(void);
 void Service_COP_WDT(void);
 void Thread_Service_WDT(void * arg);
+void Thread_Check_CLK(void * arg);
+

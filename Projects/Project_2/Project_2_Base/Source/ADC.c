@@ -35,7 +35,7 @@ void ADC0_IRQHandler() {
 	volatile static uint16_t t1,t2;
 	int diff=0;
 	DEBUG_START(DBG_IRQ_ADC);
-	osEventFlagsSet(evflags_id, F_ADC0);
+	//osEventFlagsSet(evflags_id, F_ADC0);
 
 	if (modeHBLED) {
 		Control_HBLED();
